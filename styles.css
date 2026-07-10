@@ -28,6 +28,7 @@ body {
   font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Arial;
   color: var(--txt);
   min-height: 100vh;
+  min-height: 100svh;
   overflow-x: hidden;
   overflow-y: auto;
   background:
@@ -883,7 +884,12 @@ canvas#confetti {
 
 /* ── Mobile ────────────────────────────────────────────── */
 @media (max-width: 520px) {
-  body { padding: 10px 8px 16px; align-items: flex-start; padding-top: 16px; }
+  body {
+    padding: 16px 10px;
+    justify-content: center;
+    align-items: center;
+    min-height: 100svh; /* safe area pour iOS Safari */
+  }
 
   .card {
     width: 100%;
