@@ -827,6 +827,7 @@ yesBtn.addEventListener("click", () => {
   card.innerHTML = `
     <div class="spark" aria-hidden="true"></div>
     <div class="result resultSuccess screenFade">
+      <button class="backLink" type="button" id="backFromWow">← Retour</button>
       <div class="big">Trop bieeeen 😭❤️</div>
       <p class="sub">Tu viens de me rendre la personne la plus heureuse !</p>
       <button class="btn resultBtn" id="startTogether" type="button">Commençons alors !</button>
@@ -836,5 +837,35 @@ yesBtn.addEventListener("click", () => {
   // start celebration floating praises for this success screen (rendered in body so they float behind the card)
   startFloatingPraises();
 
+  document.getElementById('backFromWow').addEventListener('click', () => {
+    stopFloatingPraises();
+    // Rebuild step 2 card fully since the original DOM is gone
+    card.innerHTML = `
+      <div class="spark" aria-hidden="true"></div>
+      <button class="backLink" type="button" id="step-back-btn-rebuilt">← Retour</button>
+      <h1 style="margin-top:32px">Tu veux bien passer ta vie avec le boss (MOI) ?</h1>
+      <p>Je te promets : Amour, Rires, et plein plein de SOUVENIIIRS. 💞</p>
+      <div class="btnRow">
+        <button class="btn" id="yes-rebuilt" type="button">Oui ❤️</button>
+        <div class="footer" style="margin-top:16px">Essaie de cliquer sur non si tu peux.</div>
+      </div>
+    `;
+    document.getElementById('step-back-btn-rebuilt').addEventListener('click', () => {
+      // go all the way back to the Trop bieeeen screen
+      card.innerHTML = `
+        <div class="spark" aria-hidden="true"></div>
+        <div class="result resultSuccess screenFade">
+          <button class="backLink" type="button" id="backFromWow2">← Retour</button>
+          <div class="big">Trop bieeeen 😭❤️</div>
+          <p class="sub">Tu viens de me rendre la personne la plus heureuse !</p>
+          <button class="btn resultBtn" id="startTogether2" type="button">Commençons alors !</button>
+        </div>
+      `;
+      startFloatingPraises();
+      document.getElementById('backFromWow2').addEventListener('click', () => { stopFloatingPraises(); location.reload(); });
+      document.getElementById('startTogether2').addEventListener('click', showActivitiesScreen);
+    });
+    document.getElementById('yes-rebuilt').addEventListener('click', showActivitiesScreen);
+  });
   document.getElementById("startTogether").addEventListener("click", showActivitiesScreen);
 });
