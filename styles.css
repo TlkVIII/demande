@@ -625,8 +625,8 @@ canvas#confetti {
 
 .backLink {
   position: absolute;
-  top: 10px;
-  left: 12px;
+  top: 0;
+  left: 0;
   border: 1px solid rgba(255,255,255,0.22);
   background: rgba(255,255,255,0.12);
   backdrop-filter: blur(6px);
@@ -634,17 +634,17 @@ canvas#confetti {
   font-size: 13px;
   font-weight: 800;
   cursor: pointer;
-  padding: 7px 14px;
-  border-radius: 999px;
+  padding: 8px 16px;
+  border-radius: 0 0 20px 0;
   transition: background 0.15s ease, color 0.15s ease, transform 0.12s ease;
   letter-spacing: 0.2px;
   z-index: 10;
 }
 
 .backLink:hover {
-  background: rgba(255,255,255,0.2);
+  background: rgba(255,255,255,0.24);
   color: #fff;
-  transform: translateX(-2px);
+  transform: scale(1.06);
 }
 
 /* Push content down so it doesn't overlap the absolute back button */
@@ -1012,7 +1012,7 @@ canvas#confetti {
   .activityScreen, .result, .resultSuccess { padding-top: 44px; }
 
   /* BackLink */
-  .backLink { position: absolute; top: 10px; left: 10px; font-size: 12px; padding: 6px 12px; }
+  .backLink { position: absolute; top: 0; left: 0; font-size: 12px; padding: 7px 12px; border-radius: 0 0 16px 0; }
 }
 
 /* ── Très petit mobile (320px) ──────────────────────────── */

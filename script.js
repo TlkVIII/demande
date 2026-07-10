@@ -171,9 +171,9 @@ function stopFloatingPraises() {
 function showTropBieeeenScreen() {
   stopFloatingPraises();
   card.innerHTML = `
+    <button class="backLink" type="button" id="backFromWow">← Retour</button>
     <div class="spark" aria-hidden="true"></div>
     <div class="result resultSuccess screenFade">
-      <button class="backLink" type="button" id="backFromWow">← Retour</button>
       <div class="big">Trop bieeeen 😭❤️</div>
       <p class="sub">Tu viens de me rendre la personne la plus heureuse !</p>
       <button class="btn resultBtn" id="startTogether" type="button">Commençons alors !</button>
@@ -235,9 +235,9 @@ function showActivitiesScreen() {
     .join("");
 
   card.innerHTML = `
+    <button class="backLink" type="button" id="backToStep2">← Retour</button>
     <div class="spark" aria-hidden="true"></div>
     <div class="activityScreen screenFade">
-      <button class="backLink" type="button" id="backToStep2">← Retour</button>
       <h2 class="activityTitle">Activités possibles à faire enseeeeemble :</h2>
       <p class="activitySubtitle">Choisis ce qui te fait le plus envie :</p>
       <div class="activityGrid">${buttons}</div>
@@ -261,9 +261,9 @@ function showActivitiesScreen() {
 
 function showProposeActivityForm() {
   card.innerHTML = `
+    <button class="backLink" type="button" id="backToList">← Retour</button>
     <div class="spark" aria-hidden="true"></div>
     <div class="proposeScreen screenFade">
-      <button class="backLink" type="button" id="backToList">← Retour</button>
       <h2 class="confirmTitle">Proposer une activité</h2>
       <p class="confirmHint">Décris l'activité que tu veux proposer :</p>
       <input type="text" id="proposalTitle" placeholder="Titre de l'activité" class="textInput" />
@@ -346,20 +346,25 @@ function showProposeActivityForm() {
     }
 
     card.innerHTML = `
+      <button class="backLink" type="button" id="backFromProposal">← Retour</button>
       <div class="spark" aria-hidden="true"></div>
       <div class="result screenFade">
         <div class="resultIcon">💡</div>
         <div class="big">Proposition envoyée !</div>
         <p class="sub">Ta proposition ${title ? '« ' + title + ' »' : ''} a été envoyée.</p>
         ${emailSent ? '<p class="sub">Un e-mail a été envoyé.</p>' : `<p class="sub">${emailError || 'Impossible d\'envoyer la proposition (serveur absent).'}</p>`}
-        <button class="btn resultBtn" id="backActivities" type="button">Retour aux activités</button>
+        <button class="btn resultBtn" id="backActivitiesProposal" type="button">Retour aux activités</button>
       </div>
     `;
 
     // start floating praises for a short celebration (rendered in body so they float behind the card)
     startFloatingPraises();
 
-    document.getElementById('backActivities').addEventListener('click', () => {
+    document.getElementById('backFromProposal').addEventListener('click', () => {
+      stopFloatingPraises();
+      showActivitiesScreen();
+    });
+    document.getElementById('backActivitiesProposal').addEventListener('click', () => {
       stopFloatingPraises();
       showActivitiesScreen();
     });
@@ -379,10 +384,9 @@ function loadActivityImage(img, activity) {
 
 function showActivityConfirm(activity) {
   card.innerHTML = `
+    <button class="backLink" type="button" id="backToList">← Retour</button>
     <div class="spark" aria-hidden="true"></div>
     <div class="confirmScreen screenFade">
-      <button class="backLink" type="button" id="backToList">← Retour</button>
-
       <div class="confirmImageWrap">
         <img class="confirmImage" src="" alt="${activity.label}" />
         <div class="confirmImageGlow" aria-hidden="true"></div>
@@ -405,6 +409,7 @@ function showActivityConfirm(activity) {
   // When user confirms, open a date/time picker to schedule the activity
   card.querySelector(".confirmYes").addEventListener("click", () => {
     card.innerHTML = `
+      <button class="backLink" type="button" id="backFromSchedule">← Retour</button>
       <div class="spark" aria-hidden="true"></div>
       <div class="scheduleScreen screenFade">
         <h2 class="confirmTitle">Choisis la date et l'heure</h2>
@@ -414,7 +419,7 @@ function showActivityConfirm(activity) {
         <textarea id="activityMessage" class="textArea scheduleTextarea" placeholder="Ex : retrouve-moi à 14h devant le parc, prévois des chaussures confortables…"></textarea>
         <div class="confirmBtns">
           <button class="btn confirmYes" type="button" id="confirmSchedule">Confirmer</button>
-          <button class="btn confirmNo" type="button" id="cancelSchedule">Annuler</button>
+          <button class="btn confirmNo" type="button" id="cancelScheduleBtn">Annuler</button>
         </div>
       </div>
     `;
@@ -431,7 +436,8 @@ function showActivityConfirm(activity) {
     };
     dtInput.value = toLocalDateTimeString(now);
 
-    document.getElementById('cancelSchedule').addEventListener('click', () => showActivityConfirm(activity));
+    document.getElementById('backFromSchedule').addEventListener('click', () => showActivityConfirm(activity));
+    document.getElementById('cancelScheduleBtn').addEventListener('click', () => showActivityConfirm(activity));
 
     document.getElementById('confirmSchedule').addEventListener('click', async () => {
       const val = dtInput.value;
@@ -493,8 +499,7 @@ function showActivityConfirm(activity) {
         }
       }
 
-      card.innerHTML = `
-        <div class="spark" aria-hidden="true"></div>
+      card.innerHTML = `        <button class="backLink" type="button" id="backFromResult">← Retour</button>        <div class="spark" aria-hidden="true"></div>
         <div class="result screenFade">
           <div class="resultIcon">${activity.emoji}</div>
           <div class="big">C'est réservé ! 🎉</div>
@@ -508,6 +513,10 @@ function showActivityConfirm(activity) {
       // celebration floating praises (rendered in body so they float behind the card)
       startFloatingPraises();
 
+      document.getElementById('backFromResult').addEventListener('click', () => {
+        stopFloatingPraises();
+        showActivitiesScreen();
+      });
       document.getElementById('backActivities').addEventListener('click', () => {
         stopFloatingPraises();
         showActivitiesScreen();
@@ -562,7 +571,7 @@ function setStep2() {
   }
 
   // Add top padding to card so backLink button doesn't overlap h1
-  card.style.paddingTop = '60px';
+  card.style.paddingTop = '48px';
 
   if (titleEl) titleEl.textContent = "Tu veux bien passer ta vie avec le boss (MOI) ?";
   if (descEl) descEl.textContent = "Je te promets : Amour, Rires, et plein plein de SOUVENIIIRS. 💞";
@@ -881,9 +890,9 @@ yesBtn.addEventListener("click", () => {
 
   // Step 2: final cute success state
   card.innerHTML = `
+    <button class="backLink" type="button" id="backFromWow">← Retour</button>
     <div class="spark" aria-hidden="true"></div>
     <div class="result resultSuccess screenFade">
-      <button class="backLink" type="button" id="backFromWow">← Retour</button>
       <div class="big">Trop bieeeen 😭❤️</div>
       <p class="sub">Tu viens de me rendre la personne la plus heureuse !</p>
       <button class="btn resultBtn" id="startTogether" type="button">Commençons alors !</button>
