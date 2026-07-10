@@ -16,6 +16,13 @@ app.use((req, res, next) => {
 });
 
 const PORT = process.env.PORT || 3001;
+const IS_RAILWAY = Boolean(process.env.RAILWAY_ENVIRONMENT || process.env.RAILWAY_PROJECT_ID);
+
+const RAILWAY_RESEND_HELP =
+  'Sur Railway, Gmail SMTP ne fonctionne pas (ports bloqués). ' +
+  '1) Crée un compte sur resend.com  2) API Keys → Create API Key  ' +
+  '3) Dans Railway → Variables, ajoute RESEND_API_KEY=re_... et RESEND_FROM=Réservation <onboarding@resend.dev>  ' +
+  '4) Redéploie le service. Inscris-toi sur Resend avec la même adresse que DEFAULT_TO_EMAIL.';
 
 function normalizeSmtpPass(pass) {
   if (!pass) return pass;
@@ -105,9 +112,13 @@ app.post('/send-email', async (req, res) => {
     return res.status(400).json({ error: 'No recipient configured. Set DEFAULT_TO_EMAIL in Railway.' });
   }
 
+  if (!resendKey && IS_RAILWAY) {
+    return res.status(500).json({ error: RAILWAY_RESEND_HELP });
+  }
+
   if (!resendKey && (!smtpHost || !smtpUser || !smtpPass)) {
     return res.status(500).json({
-      error: 'Email not configured. Set RESEND_API_KEY on Railway (recommended), or SMTP_HOST/SMTP_USER/SMTP_PASS for local dev.',
+      error: 'Email not configured. Set RESEND_API_KEY on Railway, or SMTP_HOST/SMTP_USER/SMTP_PASS for local dev.',
     });
   }
 
@@ -133,14 +144,20 @@ app.post('/send-email', async (req, res) => {
     console.error('Email error:', err);
 
     if (isSmtpTimeout(err)) {
-      return res.status(500).json({
-        error:
-          'SMTP bloqué sur Railway (plan gratuit). Crée un compte gratuit sur resend.com, ajoute RESEND_API_KEY dans Railway, et RESEND_FROM=onboarding@resend.dev. Sans domaine vérifié, Resend n’envoie qu’à l’adresse de ton compte Resend.',
-      });
+      return res.status(500).json({ error: RAILWAY_RESEND_HELP });
     }
 
     return res.status(500).json({ error: err.message || 'Email send failed' });
   }
+});
+
+app.get('/email-status', (_req, res) => {
+  const hasResend = Boolean(process.env.RESEND_API_KEY);
+  res.json({
+    railway: IS_RAILWAY,
+    provider: hasResend ? 'resend' : IS_RAILWAY ? 'none (configure RESEND_API_KEY)' : 'smtp',
+    recipientConfigured: Boolean(process.env.DEFAULT_TO_EMAIL || process.env.MAIL_TO),
+  });
 });
 
 app.get('*', (req, res) => {
@@ -148,5 +165,7 @@ app.get('*', (req, res) => {
 });
 
 app.listen(PORT, '0.0.0.0', () => {
-  console.log(`Scheduler server listening on http://localhost:${PORT}`);
+  const hasResend = Boolean(process.env.RESEND_API_KEY);
+  const mode = hasResend ? 'Resend API' : IS_RAILWAY ? 'NON CONFIGURÉ (ajoute RESEND_API_KEY)' : 'SMTP local';
+  console.log(`Scheduler server listening on http://localhost:${PORT} — email: ${mode}`);
 });
