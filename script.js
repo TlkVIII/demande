@@ -85,6 +85,11 @@ const activities = [
     emoji: "🏙️",
     image: "./images/visiterville.JPEG",
   },
+  {
+    label: "Proposer une activité",
+    emoji: "💡",
+    image: "./images/default.jpg",
+  },
 ];
 
 function showActivitiesScreen() {
@@ -110,8 +115,114 @@ function showActivitiesScreen() {
   card.querySelectorAll(".activityBtn").forEach((btn) => {
     btn.addEventListener("click", () => {
       const activity = activities.find((a) => a.label === btn.dataset.activity);
-      if (activity) showActivityConfirm(activity);
+      if (!activity) return;
+      if (activity.label === 'Proposer une activité') {
+        showProposeActivityForm();
+      } else {
+        showActivityConfirm(activity);
+      }
     });
+  });
+}
+
+function showProposeActivityForm() {
+  card.innerHTML = `
+    <div class="spark" aria-hidden="true"></div>
+    <div class="proposeScreen screenFade">
+      <button class="backLink" type="button" id="backToList">← Retour</button>
+      <h2 class="confirmTitle">Proposer une activité</h2>
+      <p class="confirmHint">Décris l'activité que tu veux proposer :</p>
+      <input type="text" id="proposalTitle" placeholder="Titre de l'activité" class="textInput" />
+      <textarea id="proposalDetails" placeholder="Détails de l'activité (lieu, durée, autre)" class="textArea"></textarea>
+      <p class="confirmHint">Propose une date et une heure (optionnel) :</p>
+      <input type="datetime-local" id="proposalDateTime" class="datetimeInput" />
+      <div class="confirmBtns">
+        <button class="btn confirmYes" type="button" id="submitProposal">Envoyer la proposition</button>
+        <button class="btn confirmNo" type="button" id="cancelProposal">Annuler</button>
+      </div>
+    </div>
+  `;
+
+  document.getElementById("backToList").addEventListener("click", showActivitiesScreen);
+  document.getElementById("cancelProposal").addEventListener("click", showActivitiesScreen);
+
+  // Prefill datetime to next hour like other flow
+  const dtInput = card.querySelector('#proposalDateTime');
+  const now = new Date();
+  now.setMinutes(0,0,0);
+  now.setHours(now.getHours()+1);
+  const toLocalDateTimeString = (d) => {
+    const off = d.getTimezoneOffset();
+    const local = new Date(d.getTime() - off * 60000);
+    return local.toISOString().slice(0,16);
+  };
+  dtInput.value = toLocalDateTimeString(now);
+
+  document.getElementById('submitProposal').addEventListener('click', async () => {
+    const title = document.getElementById('proposalTitle').value.trim();
+    const details = document.getElementById('proposalDetails').value.trim();
+    const val = document.getElementById('proposalDateTime').value;
+    if (!title && !details) {
+      alert('Ajoute au moins un titre ou une description pour la proposition.');
+      return;
+    }
+    const sendBtn = document.getElementById('submitProposal');
+    sendBtn.textContent = 'Envoi...';
+    sendBtn.disabled = true;
+
+    let pretty = val ? new Date(val).toLocaleString(undefined, { weekday: 'long', year:'numeric', month:'long', day:'numeric', hour:'2-digit', minute:'2-digit' }) : 'Date non fournie';
+
+    const emailSubject = `💡 Proposition d'activité : ${title || 'Nouvelle proposition'}`;
+    const emailText = `💡 Proposition:\n${title ? title + '\n' : ''}${details ? details + '\n' : ''}${val ? 'Proposée pour : ' + pretty + '\n' : ''}`;
+    const emailHtml = `
+      <div style="font-family: Arial, sans-serif; color: #4a2d3f; line-height: 1.6;">
+        <p>💡 <strong>Nouvelle proposition d'activité</strong></p>
+        ${title ? `<p><strong>Titre:</strong> ${title}</p>` : ''}
+        ${details ? `<p><strong>Détails:</strong> ${details.replace(/\n/g,'<br/>')}</p>` : ''}
+        ${val ? `<p><strong>Date proposée:</strong> ${pretty}</p>` : '<p><em>Aucune date proposée</em></p>'}
+      </div>
+    `;
+
+    let emailSent = false;
+    let emailError = '';
+    try {
+      const PROD_BACKEND = 'https://demande-production.up.railway.app';
+      const backendBase = (location.hostname === 'localhost' || location.hostname === '127.0.0.1')
+        ? 'http://localhost:3001'
+        : PROD_BACKEND;
+      const backendUrl = `${backendBase.replace(/\/$/, '')}/send-email`;
+      const resp = await fetch(backendUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ subject: emailSubject, text: emailText, html: emailHtml }),
+      });
+      if (resp.ok) {
+        emailSent = true;
+      } else {
+        const errorText = await resp.text();
+        emailError = `Erreur serveur (${resp.status}): ${errorText}`;
+        console.warn('Email API returned', resp.status, errorText);
+      }
+    } catch (err) {
+      emailError = err.message || 'Impossible de joindre le serveur.';
+      console.warn('Failed to call Email API', err);
+    } finally {
+      sendBtn.textContent = 'Envoyer la proposition';
+      sendBtn.disabled = false;
+    }
+
+    card.innerHTML = `
+      <div class="spark" aria-hidden="true"></div>
+      <div class="result screenFade">
+        <div class="resultIcon">💡</div>
+        <div class="big">Proposition envoyée !</div>
+        <p class="sub">Ta proposition ${title ? '« ' + title + ' »' : ''} a été envoyée.</p>
+        ${emailSent ? '<p class="sub">Un e-mail a été envoyé.</p>' : `<p class="sub">${emailError || 'Impossible d\'envoyer la proposition (serveur absent).'}</p>`}
+        <button class="btn resultBtn" id="backActivities" type="button">Retour aux activités</button>
+      </div>
+    `;
+
+    document.getElementById('backActivities').addEventListener('click', showActivitiesScreen);
   });
 }
 
