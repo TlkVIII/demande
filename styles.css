@@ -629,6 +629,16 @@ canvas#confetti {
   transform: translateX(-2px);
 }
 
+/* Push content down so it doesn't overlap the absolute back button */
+.proposeScreen,
+.activityScreen,
+.confirmScreen,
+.scheduleScreen,
+.result,
+.resultSuccess {
+  padding-top: 48px;
+}
+
 .confirmImageWrap {
   position: relative;
   margin-top: 28px;
