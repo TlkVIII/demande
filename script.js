@@ -91,6 +91,11 @@ const activities = [
     image: "./images/visiterville.JPEG",
   },
   {
+    label: "Cinéma",
+    emoji: "🎞️",
+    image: "./images/cinema.jpg",
+  },
+  {
     label: "Proposer une activité",
     emoji: "💡",
     image: "./images/default.jpg",
@@ -233,7 +238,7 @@ function showActivitiesScreen() {
     <div class="spark" aria-hidden="true"></div>
     <div class="activityScreen screenFade">
       <button class="backLink" type="button" id="backToStep2">← Retour</button>
-      <h2 class="activityTitle">Activités possibles à faire ensemble :</h2>
+      <h2 class="activityTitle">Activités possibles à faire enseeeeemble :</h2>
       <p class="activitySubtitle">Choisis ce qui te fait le plus envie :</p>
       <div class="activityGrid">${buttons}</div>
     </div>
