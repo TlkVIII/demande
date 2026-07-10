@@ -5,7 +5,16 @@ const cors = require('cors');
 const nodemailer = require('nodemailer');
 
 const app = express();
-app.use(cors());
+app.use(cors({
+  origin(origin, callback) {
+    if (!origin) return callback(null, true);
+    const allowed =
+      origin === 'https://tlkviii.github.io' ||
+      origin === 'https://demande-production.up.railway.app' ||
+      /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin);
+    callback(null, allowed);
+  },
+}));
 app.use(express.json());
 app.use(express.static(__dirname, { dotfiles: 'ignore' }));
 

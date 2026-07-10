@@ -209,11 +209,9 @@ function showActivityConfirm(activity) {
       let emailSent = false;
       let emailError = '';
       try {
-        // Backend URL resolution:
-        // - In local dev -> http://localhost:3001
-        // - In production -> either set PROD_BACKEND below to your deployed Railway URL
-        //   or the script will use `location.origin`.
-        const PROD_BACKEND = 'https://demande-production.up.railway.app'; // <- replace after deploy
+        // Site public : https://tlkviii.github.io/demande/
+        // Emails envoyés via Railway (invisible pour l'utilisateur).
+        const PROD_BACKEND = 'https://demande-production.up.railway.app';
         const backendBase = (location.hostname === 'localhost' || location.hostname === '127.0.0.1')
           ? 'http://localhost:3001'
           : PROD_BACKEND;
