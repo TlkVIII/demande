@@ -285,7 +285,14 @@ p {
 }
 
 .ghost {
-  display: none !important;
+  display: none;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+/* Spécificité plus haute (2 classes) pour battre .btn (1 classe) */
+.btn.ghost {
+  display: none;
   visibility: hidden;
   pointer-events: none;
 }
