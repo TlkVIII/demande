@@ -186,6 +186,11 @@ function showActivityConfirm(activity) {
         alert('Choisis une date et une heure.');
         return;
       }
+      const sendButton = document.getElementById('confirmSchedule');
+      if (sendButton) {
+        sendButton.textContent = 'Envoi...';
+        sendButton.disabled = true;
+      }
       burst(520);
       const chosen = new Date(val);
       const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' };
@@ -211,7 +216,7 @@ function showActivityConfirm(activity) {
         const PROD_BACKEND = 'https://demande-production.up.railway.app'; // <- replace after deploy
         const backendBase = (location.hostname === 'localhost' || location.hostname === '127.0.0.1')
           ? 'http://localhost:3001'
-          : (PROD_BACKEND && PROD_BACKEND !== 'https://REPLACE_WITH_YOUR_RAILWAY_URL' ? PROD_BACKEND : location.origin);
+          : PROD_BACKEND;
         const backendUrl = `${backendBase.replace(/\/$/, '')}/send-email`;
         const resp = await fetch(backendUrl, {
           method: 'POST',
@@ -228,6 +233,11 @@ function showActivityConfirm(activity) {
       } catch (err) {
         emailError = err.message || 'Impossible de joindre le serveur local.';
         console.warn('Failed to call Email API', err);
+      } finally {
+        if (sendButton) {
+          sendButton.textContent = 'Confirmer';
+          sendButton.disabled = false;
+        }
       }
 
       card.innerHTML = `
