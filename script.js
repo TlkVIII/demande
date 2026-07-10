@@ -174,11 +174,25 @@ function showActivitiesScreen() {
   card.innerHTML = `
     <div class="spark" aria-hidden="true"></div>
     <div class="activityScreen screenFade">
+      <button class="backLink" type="button" id="backToStep2">← Retour</button>
       <h2 class="activityTitle">Activités possibles à faire ensemble :</h2>
       <p class="activitySubtitle">Choisis ce qui te fait le plus envie :</p>
       <div class="activityGrid">${buttons}</div>
     </div>
   `;
+
+  document.getElementById('backToStep2').addEventListener('click', () => {
+    stopFloatingPraises();
+    card.innerHTML = `
+      <div class="spark" aria-hidden="true"></div>
+      <div class="result resultSuccess screenFade">
+        <div class="big">Trop bieeeen 😭❤️</div>
+        <p class="sub">Tu viens de me rendre la personne la plus heureuse !</p>
+        <button class="btn resultBtn" id="startTogether" type="button">Commençons alors !</button>
+      </div>
+    `;
+    document.getElementById("startTogether").addEventListener("click", showActivitiesScreen);
+  });
 
   card.querySelectorAll(".activityBtn").forEach((btn) => {
     btn.addEventListener("click", () => {
