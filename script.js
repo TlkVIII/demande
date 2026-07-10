@@ -539,6 +539,7 @@ function setStep2() {
     backBtn.style.display = 'block';
     backBtn.onclick = () => {
       backBtn.style.display = 'none';
+      card.style.paddingTop = '';
       if (logoEl) logoEl.style.display = '';
       step = 1;
       restoreNoIntoRow();
@@ -549,6 +550,9 @@ function setStep2() {
       yesBtn.style.transform = '';
     };
   }
+
+  // Add top padding to card so backLink button doesn't overlap h1
+  card.style.paddingTop = '60px';
 
   if (titleEl) titleEl.textContent = "Tu veux bien passer ta vie avec le boss (MOI) ?";
   if (descEl) descEl.textContent = "Je te promets : Amour, Rires, et plein plein de SOUVENIIIRS. 💞";

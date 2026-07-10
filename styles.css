@@ -264,6 +264,8 @@ p {
   gap: 18px;
   padding-top: 10px;
   min-height: 64px;
+  width: 100%;
+  text-align: center;
 }
 
 .btn {
