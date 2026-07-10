@@ -70,7 +70,16 @@ app.post('/send-email', async (req, res) => {
     const info = await transporter.sendMail(mailOptions);
     return res.json({ messageId: info.messageId });
   } catch (err) {
-    console.error(err);
+    console.error('SMTP error:', err);
+    const isTimeout =
+      err.code === 'ETIMEDOUT' ||
+      err.code === 'ECONNECTION' ||
+      (typeof err.message === 'string' && err.message.toLowerCase().includes('connection timeout'));
+    if (isTimeout) {
+      return res.status(500).json({
+        error: 'SMTP connection timeout. Vérifie SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS, et le mot de passe d’application Gmail.',
+      });
+    }
     return res.status(500).json({ error: err.message });
   }
 });
