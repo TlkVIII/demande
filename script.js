@@ -622,9 +622,16 @@ let noMessageEl = null;
 
 function showNoMessage() {
   if (noMessageEl) return; // already visible
+  // level = 0 at 3 clicks, +1 every 3 extra clicks (capped at 5 for sanity)
+  const level = Math.min(5, Math.floor(noClickCount / 3) - 1);
   noMessageEl = document.createElement('div');
   noMessageEl.className = 'no-message-toast';
   noMessageEl.textContent = 'Clique sur OUI wsh y\'a quoi ???';
+  // base font-size 15px, +8px per level
+  const fontSize = 15 + level * 8;
+  const padding = `${13 + level * 5}px ${24 + level * 10}px`;
+  noMessageEl.style.fontSize = `${fontSize}px`;
+  noMessageEl.style.padding = padding;
   document.body.appendChild(noMessageEl);
   // auto-hide after 3s
   window.setTimeout(hideNoMessage, 3000);
@@ -651,7 +658,7 @@ function resetNoCounter() {
 noBtn.addEventListener("pointerdown", (e) => {
   e.preventDefault();
   noClickCount++;
-  if (noClickCount >= 3) showNoMessage();
+  if (noClickCount % 3 === 0) showNoMessage();
   moveNo(false);
 });
 noBtn.addEventListener("click", (e) => {
