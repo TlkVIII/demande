@@ -1,4 +1,5 @@
 require('dotenv').config();
+const path = require('path');
 const express = require('express');
 const cors = require('cors');
 const nodemailer = require('nodemailer');
@@ -6,6 +7,7 @@ const nodemailer = require('nodemailer');
 const app = express();
 app.use(cors());
 app.use(express.json());
+app.use(express.static(__dirname, { dotfiles: 'ignore' }));
 
 const PORT = process.env.PORT || 3001;
 
@@ -62,6 +64,10 @@ app.post('/send-email', async (req, res) => {
     console.error(err);
     return res.status(500).json({ error: err.message });
   }
+});
+
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'index.html'));
 });
 
 app.listen(PORT, '0.0.0.0', () => {
