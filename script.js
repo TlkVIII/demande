@@ -43,10 +43,122 @@ let noScaleFactor = 1;
 const titleEl = card.querySelector("h1");
 const descEl = card.querySelector("p");
 const footerEl = card.querySelector(".footer");
+const bgMiniImagesEl = document.getElementById("bg-mini-images");
 
 // Force correct centering on btnRow (most reliable cross-browser/iOS approach)
 btnRow.style.textAlign = 'center';
 btnRow.style.width = '100%';
+
+const backgroundImages = [
+  "./images/imagefond/IMG_2463.jpeg",
+  "./images/imagefond/IMG_2465.jpeg",
+  "./images/imagefond/IMG_2466.jpeg",
+  "./images/imagefond/IMG_2518.jpeg",
+  "./images/imagefond/IMG_2520.jpeg",
+  "./images/imagefond/IMG_2524.jpeg",
+  "./images/imagefond/IMG_2526.jpeg",
+  "./images/imagefond/IMG_2529.jpeg",
+  "./images/imagefond/IMG_2530.jpeg",
+  "./images/imagefond/IMG_2533.jpeg",
+  "./images/imagefond/IMG_2534 (1).jpeg",
+  "./images/imagefond/IMG_2534.jpeg",
+  "./images/imagefond/IMG_2544.jpeg",
+  "./images/imagefond/IMG_2598.jpeg",
+  "./images/imagefond/IMG_2605.jpeg",
+  "./images/imagefond/IMG_2606.jpeg",
+  "./images/imagefond/IMG_2607.jpeg",
+  "./images/imagefond/IMG_2610.jpeg",
+  "./images/imagefond/IMG_2634 (1).jpeg",
+  "./images/imagefond/IMG_2634.jpeg",
+  "./images/imagefond/IMG_2635.jpeg",
+  "./images/imagefond/IMG_2636.jpeg",
+  "./images/imagefond/IMG_2651.jpeg",
+  "./images/imagefond/IMG_2702.jpg",
+];
+
+function setRandomBackground() {
+  if (!bgMiniImagesEl || !backgroundImages.length) return;
+
+  bgMiniImagesEl.classList.add('is-fading');
+
+  const tileCount = Math.min(16, backgroundImages.length);
+  const usedIndexes = new Set();
+
+  window.setTimeout(() => {
+    if (!bgMiniImagesEl) return;
+    bgMiniImagesEl.innerHTML = '';
+
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
+    const cols = viewportWidth < 700 ? 3 : 4;
+    const rows = Math.ceil(tileCount / cols);
+    const cellWidth = viewportWidth / cols;
+    const cellHeight = viewportHeight / rows;
+    const occupiedRects = [];
+
+    for (let i = 0; i < tileCount; i++) {
+      let imageIndex = Math.floor(Math.random() * backgroundImages.length);
+      while (usedIndexes.has(imageIndex) && usedIndexes.size < backgroundImages.length) {
+        imageIndex = Math.floor(Math.random() * backgroundImages.length);
+      }
+      usedIndexes.add(imageIndex);
+
+      const tile = document.createElement('span');
+      tile.className = 'bg-mini-image';
+      const width = 62 + Math.random() * 88;
+      const height = 62 + Math.random() * 88;
+      const col = i % cols;
+      const row = Math.floor(i / cols);
+      const baseX = col * cellWidth;
+      const baseY = row * cellHeight;
+      const maxOffsetX = Math.max(0, cellWidth - width - 18);
+      const maxOffsetY = Math.max(0, cellHeight - height - 18);
+      const x = baseX + 9 + Math.random() * maxOffsetX;
+      const y = baseY + 9 + Math.random() * maxOffsetY;
+      const rect = { x, y, width, height };
+
+      let overlap = false;
+      for (const placedRect of occupiedRects) {
+        const separated =
+          rect.x + rect.width + 16 <= placedRect.x ||
+          placedRect.x + placedRect.width + 16 <= rect.x ||
+          rect.y + rect.height + 16 <= placedRect.y ||
+          placedRect.y + placedRect.height + 16 <= rect.y;
+        if (!separated) {
+          overlap = true;
+          break;
+        }
+      }
+
+      if (overlap) {
+        continue;
+      }
+
+      occupiedRects.push(rect);
+
+      tile.style.setProperty('--mini-src', `url("${backgroundImages[imageIndex]}")`);
+      tile.style.setProperty('--mini-w', `${width}px`);
+      tile.style.setProperty('--mini-h', `${height}px`);
+      tile.style.setProperty('--mini-x', `${x}px`);
+      tile.style.setProperty('--mini-y', `${y}px`);
+      tile.style.setProperty('--mini-rot', `${Math.random() * 24 - 12}deg`);
+      tile.style.setProperty('--mini-opacity', `${0.16 + Math.random() * 0.20}`);
+
+      bgMiniImagesEl.appendChild(tile);
+
+      window.requestAnimationFrame(() => {
+        tile.classList.add('is-visible');
+      });
+    }
+
+    window.requestAnimationFrame(() => {
+      bgMiniImagesEl.classList.remove('is-fading');
+    });
+  }, 360);
+}
+
+setRandomBackground();
+window.setInterval(setRandomBackground, 7000);
 
 
 const activities = [
