@@ -477,6 +477,23 @@ function setStep2() {
   const logoEl = document.getElementById('site-logo');
   if (logoEl) logoEl.style.display = 'none';
 
+  // show the back button to return to step 1
+  const backBtn = document.getElementById('step-back-btn');
+  if (backBtn) {
+    backBtn.style.display = 'block';
+    backBtn.onclick = () => {
+      backBtn.style.display = 'none';
+      if (logoEl) logoEl.style.display = '';
+      step = 1;
+      restoreNoIntoRow();
+      if (titleEl) titleEl.textContent = 'Oh princesse, j\'ai une petite question !!!';
+      if (descEl) descEl.textContent = 'C\'est vraiment important !';
+      if (footerEl) footerEl.textContent = 'Essaie de cliquer sur non si tu peux.';
+      yesScale = 1;
+      yesBtn.style.transform = '';
+    };
+  }
+
   if (titleEl) titleEl.textContent = "Tu veux bien passer ta vie avec le boss (MOI) ?";
   if (descEl) descEl.textContent = "Je te promets : Amour, Rires, et plein plein de SOUVENIIIRS. 💞";
   if (footerEl) footerEl.textContent = "Essaie de cliquer sur non si tu peux.";
