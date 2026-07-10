@@ -44,6 +44,13 @@ const titleEl = card.querySelector("h1");
 const descEl = card.querySelector("p");
 const footerEl = card.querySelector(".footer");
 
+// Force correct flex centering on the btnRow right at load time
+// (ensures consistent layout across all browsers/platforms on first render)
+btnRow.style.display = 'flex';
+btnRow.style.justifyContent = 'center';
+btnRow.style.alignItems = 'center';
+btnRow.style.width = '100%';
+
 const activities = [
   {
     label: "Randonnée jolie",
