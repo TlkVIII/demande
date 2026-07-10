@@ -845,59 +845,28 @@ canvas#confetti {
     padding: 34px 26px 24px;
     width: min(720px, 96vw);
   }
-
-  .activityGrid {
-    gap: 12px;
-  }
-
-  .activityBtn {
-    min-height: 48px;
-    padding: 10px 12px;
-    font-size: 14px;
-  }
-
-  .btn {
-    min-width: 100px;
-    padding: 11px 16px;
-  }
-
-  .confirmImage {
-    height: 200px;
-  }
+  .activityGrid { gap: 12px; }
+  .activityBtn { min-height: 48px; padding: 10px 12px; font-size: 14px; }
+  .btn { min-width: 100px; padding: 11px 16px; }
+  .confirmImage { height: 200px; }
 }
 
+/* ── Tablette ──────────────────────────────────────────── */
 @media (max-width: 760px) {
   .card {
     padding: 30px 20px 22px;
     border-radius: 28px;
   }
-
-  h1 {
-    font-size: clamp(26px, 6vw, 38px);
-  }
-
+  h1 { font-size: clamp(26px, 6vw, 38px); }
   .btnRow {
     width: 100%;
     gap: 12px;
     flex-wrap: wrap;
     justify-content: center;
   }
-
-  .btn {
-    min-width: 100px;
-    padding: 12px 14px;
-    font-size: 15px;
-  }
-
-  .activityGrid {
-    grid-template-columns: 1fr;
-    max-height: none;
-  }
-
-  .confirmImage {
-    height: 190px;
-  }
-
+  .btn { min-width: 100px; padding: 12px 14px; font-size: 15px; }
+  .activityGrid { grid-template-columns: 1fr; max-height: none; }
+  .confirmImage { height: 190px; }
   .confirmBtns {
     width: 100%;
     flex-direction: row;
@@ -906,116 +875,117 @@ canvas#confetti {
     align-items: center;
     gap: 12px;
   }
-
-  .confirmBtns .btn {
-    width: auto;
-    min-width: 120px;
-    max-width: 240px;
-  }
+  .confirmBtns .btn { width: auto; min-width: 120px; max-width: 240px; }
+  .textInput, .textArea { font-size: 15px; }
+  .datetimeInput { min-width: 260px; }
+  .no-message-toast { white-space: normal; max-width: 90vw; text-align: center; }
 }
 
+/* ── Mobile ────────────────────────────────────────────── */
 @media (max-width: 520px) {
-  body {
-    padding: 14px 10px 18px;
-  }
+  body { padding: 10px 8px 16px; align-items: flex-start; padding-top: 16px; }
 
   .card {
-    width: min(98vw, 100%);
-    margin: 0 auto;
-    padding: 24px 14px 18px;
-    border-radius: 22px;
-    min-height: auto;
-  }
-
-  .card::after {
-    border-radius: 22px;
-  }
-
-  h1 {
-    font-size: clamp(24px, 8vw, 32px);
-  }
-
-  p,
-  .activitySubtitle,
-  .confirmHint,
-  .result .sub {
-    font-size: 14px;
-  }
-
-  .btn {
-    display: inline-flex;
-    justify-content: center;
-    align-items: center;
-    margin: 0 8px;
-    min-width: 100px;
-    max-width: 240px;
-    padding: 10px 16px;
-  }
-  .btnRow,
-  .confirmBtns {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 10px;
     width: 100%;
-    max-width: 420px;
-    margin: 12px auto 0;
-    padding-top: 6px;
-    box-sizing: border-box;
-  }
-
-  .confirmBtns {
-    flex-wrap: nowrap;
-  }
-
-  .confirmBtns .btn {
-    flex: 0 0 auto;
-    min-width: 110px;
-  }
-
-  /* Ensure the card stacks centered on mobile */
-  .card {
+    margin: 0 auto;
+    padding: 20px 12px 16px;
+    border-radius: 20px;
+    min-height: auto;
     display: flex;
     flex-direction: column;
     align-items: center;
   }
+  .card::after { border-radius: 20px; }
 
-  .footer {
-    margin-top: 12px;
-  }
+  h1 { font-size: clamp(22px, 7.5vw, 30px); }
+  h2.activityTitle, h2.confirmTitle { font-size: clamp(20px, 6.5vw, 28px); }
 
-  .activityBtn {
+  p, .activitySubtitle, .confirmHint, .result .sub, .scheduleOptLabel { font-size: 13px; }
+
+  .site-logo { width: 52px; height: 52px; }
+
+  /* Boutons Oui/Non principaux */
+  .btnRow, .confirmBtns {
+    display: flex;
+    justify-content: center;
+    align-items: center;
     gap: 10px;
-    padding: 12px 14px;
+    width: 100%;
+    max-width: 360px;
+    margin: 10px auto 0;
+    flex-wrap: nowrap;
   }
+  .btn {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    min-width: 96px;
+    max-width: 200px;
+    padding: 10px 14px;
+    font-size: 14px;
+  }
+  .confirmBtns .btn { flex: 1 1 0; min-width: 96px; }
 
+  /* Grille activités */
   .activityGrid {
     grid-template-columns: 1fr;
-    justify-items: center;
-  }
-
-  .activityBtn {
+    max-height: min(52vh, 340px);
+    gap: 8px;
     width: 100%;
-    max-width: 100%;
+  }
+  .activityBtn { width: 100%; gap: 8px; padding: 11px 12px; font-size: 13px; }
+  .activityEmoji { width: 32px; height: 32px; font-size: 15px; }
+
+  /* Image confirmation */
+  .confirmImage { height: 145px; }
+  .confirmChoicePill { font-size: 13px; padding: 8px 12px; }
+  .confirmImageWrap { margin-top: 18px; }
+
+  /* Champs de formulaire */
+  .textInput, .textArea, .datetimeInput { min-width: 100%; font-size: 14px; }
+  .textArea, .scheduleTextarea { min-height: 90px; }
+  .datetimeInput { padding: 13px 14px; font-size: 14px; }
+
+  /* Textes flottants de célébration */
+  .floating-praise { font-size: 12px; padding: 6px 10px; }
+
+  /* Toast Non */
+  .no-message-toast {
+    font-size: 14px !important;
+    white-space: normal;
+    max-width: 88vw;
+    text-align: center;
+    bottom: 20px;
   }
 
-  .activityEmoji {
-    width: 34px;
-    height: 34px;
-    font-size: 16px;
-  }
+  .footer { margin-top: 10px; font-size: 12px; }
+  .resultBtn { min-width: 180px; padding: 12px 18px; font-size: 14px; }
+  .resultIcon { width: 52px; height: 52px; font-size: 26px; }
+  .big { font-size: clamp(26px, 8vw, 36px); }
 
-  .confirmImage {
-    height: 160px;
-  }
+  /* Proposescreen */
+  .proposeScreen, .confirmScreen, .scheduleScreen,
+  .activityScreen, .result, .resultSuccess { padding-top: 44px; }
 
-  .confirmChoicePill {
-    font-size: 14px;
-    padding: 10px 14px;
-  }
+  /* BackLink */
+  .backLink { font-size: 12px; padding: 6px 12px; top: 8px; left: 8px; }
+}
 
-  .datetimeInput {
-    min-width: 100%;
-  }
+/* ── Très petit mobile (320px) ──────────────────────────── */
+@media (max-width: 360px) {
+  h1 { font-size: 20px; }
+  .btn { font-size: 13px; min-width: 84px; padding: 9px 10px; }
+  .activityBtn { font-size: 12px; }
+  .big { font-size: 24px; }
+  .confirmImage { height: 120px; }
+}
+
+/* ── Grand écran / TV ───────────────────────────────────── */
+@media (min-width: 1280px) {
+  .card { width: min(760px, 88vw); padding: 48px 44px 36px; }
+  h1 { font-size: 52px; }
+  .activityGrid { grid-template-columns: 1fr 1fr; }
+  .activityBtn { font-size: 15px; min-height: 58px; }
+  .btn { min-width: 120px; padding: 14px 22px; font-size: 17px; }
 }
 
