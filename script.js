@@ -616,9 +616,42 @@ function moveNo(smooth = true) {
   }, smooth ? 220 : 80);
 }
 
+// Counter to track how many times the user tried to click "Non"
+let noClickCount = 0;
+let noMessageEl = null;
+
+function showNoMessage() {
+  if (noMessageEl) return; // already visible
+  noMessageEl = document.createElement('div');
+  noMessageEl.className = 'no-message-toast';
+  noMessageEl.textContent = 'Clique sur OUI wsh y\'a quoi ???';
+  document.body.appendChild(noMessageEl);
+  // auto-hide after 3s
+  window.setTimeout(hideNoMessage, 3000);
+}
+
+function hideNoMessage() {
+  if (!noMessageEl) return;
+  noMessageEl.classList.add('no-message-hide');
+  window.setTimeout(() => {
+    if (noMessageEl && noMessageEl.parentElement) {
+      noMessageEl.parentElement.removeChild(noMessageEl);
+    }
+    noMessageEl = null;
+  }, 350);
+}
+
+// Reset counter when user advances (called from step changes)
+function resetNoCounter() {
+  noClickCount = 0;
+  hideNoMessage();
+}
+
 // Move only when trying to click/tap on "Non"
 noBtn.addEventListener("pointerdown", (e) => {
   e.preventDefault();
+  noClickCount++;
+  if (noClickCount >= 3) showNoMessage();
   moveNo(false);
 });
 noBtn.addEventListener("click", (e) => {
@@ -737,6 +770,7 @@ yesBtn.addEventListener("pointerdown", () => {
 yesBtn.addEventListener("click", () => {
   // Add an extra bigger wave on click
   burst(520);
+  resetNoCounter();
   if (step === 1) {
     setStep2();
     return;
