@@ -208,7 +208,7 @@ function showActivityConfirm(activity) {
         // - In local dev -> http://localhost:3001
         // - In production -> either set PROD_BACKEND below to your deployed Railway URL
         //   or the script will use `location.origin`.
-        const PROD_BACKEND = 'https://REPLACE_WITH_YOUR_RAILWAY_URL'; // <- replace after deploy
+        const PROD_BACKEND = 'https://demande-production.up.railway.app'; // <- replace after deploy
         const backendBase = (location.hostname === 'localhost' || location.hostname === '127.0.0.1')
           ? 'http://localhost:3001'
           : (PROD_BACKEND && PROD_BACKEND !== 'https://REPLACE_WITH_YOUR_RAILWAY_URL' ? PROD_BACKEND : location.origin);
