@@ -989,7 +989,7 @@ canvas#confetti {
   .activityScreen, .result, .resultSuccess { padding-top: 44px; }
 
   /* BackLink */
-  .backLink { font-size: 12px; padding: 6px 12px; top: 8px; left: 8px; }
+  .backLink { position: absolute; top: 10px; left: 10px; font-size: 12px; padding: 6px 12px; }
 }
 
 /* ── Très petit mobile (320px) ──────────────────────────── */
