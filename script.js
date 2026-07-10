@@ -92,7 +92,75 @@ const activities = [
   },
 ];
 
+// Floating praise texts (e.g. "Youpiii", "Excellent") that appear briefly
+// when the user lands on the celebration/result screen.
+const PRAISE_TEXTS = [
+  { text: "Youpiii", emoji: "🎉" },
+  { text: "Excellent", emoji: "👏" },
+  { text: "Formidable", emoji: "✨" },
+  { text: "C'est la fête", emoji: "🥳" },
+];
+let _floatingPraisesInterval = null;
+let _floatingPraisesContainer = null;
+
+function startFloatingPraises(parent = document.body) {
+  stopFloatingPraises();
+  _floatingPraisesContainer = document.createElement('div');
+  _floatingPraisesContainer.className = 'floating-praises';
+  parent.appendChild(_floatingPraisesContainer);
+
+  function spawnOne() {
+    const info = PRAISE_TEXTS[Math.floor(Math.random() * PRAISE_TEXTS.length)];
+    const el = document.createElement('span');
+    el.className = 'floating-praise';
+    el.innerHTML = `${info.emoji} ${info.text}`;
+
+    // Random horizontal start inside the parent
+    const parentRect = parent.getBoundingClientRect();
+    const x = Math.random() * Math.max(0, parentRect.width - 120);
+    el.style.left = `${x}px`;
+    // Slight random delay so they don't all look the same
+    el.style.animationDelay = `${Math.random() * 0.6}s`;
+
+    _floatingPraisesContainer.appendChild(el);
+
+    // Remove after animation (2.8s matches CSS animation)
+    window.setTimeout(() => {
+      if (el && el.parentElement) el.parentElement.removeChild(el);
+    }, 3000);
+  }
+
+  // Spawn a few immediately so effect is visible right away
+  for (let i = 0; i < 5; i++) spawnOne();
+
+  _floatingPraisesInterval = window.setInterval(spawnOne, 420);
+}
+
+function stopFloatingPraises() {
+  if (_floatingPraisesInterval) {
+    clearInterval(_floatingPraisesInterval);
+    _floatingPraisesInterval = null;
+  }
+  if (_floatingPraisesContainer) {
+    // fade out existing children quickly
+    _floatingPraisesContainer.querySelectorAll('.floating-praise').forEach((el) => {
+      el.style.transition = 'opacity .25s ease, transform .25s ease';
+      el.style.opacity = '0';
+      el.style.transform = 'translateY(-6px)';
+    });
+    window.setTimeout(() => {
+      if (_floatingPraisesContainer && _floatingPraisesContainer.parentElement) {
+        _floatingPraisesContainer.parentElement.removeChild(_floatingPraisesContainer);
+      }
+      _floatingPraisesContainer = null;
+    }, 300);
+  }
+}
+
+
 function showActivitiesScreen() {
+  // ensure any floating praises are stopped when returning to the activities list
+  stopFloatingPraises();
   const buttons = activities
     .map(
       (a) =>
@@ -222,7 +290,13 @@ function showProposeActivityForm() {
       </div>
     `;
 
-    document.getElementById('backActivities').addEventListener('click', showActivitiesScreen);
+    // start floating praises for a short celebration (rendered in body so they float behind the card)
+    startFloatingPraises();
+
+    document.getElementById('backActivities').addEventListener('click', () => {
+      stopFloatingPraises();
+      showActivitiesScreen();
+    });
   });
 }
 
@@ -360,7 +434,13 @@ function showActivityConfirm(activity) {
         </div>
       `;
 
-      document.getElementById('backActivities').addEventListener('click', showActivitiesScreen);
+      // celebration floating praises (rendered in body so they float behind the card)
+      startFloatingPraises();
+
+      document.getElementById('backActivities').addEventListener('click', () => {
+        stopFloatingPraises();
+        showActivitiesScreen();
+      });
     });
   });
 
@@ -389,7 +469,7 @@ function setStep2() {
   restoreNoIntoRow();
 
   if (titleEl) titleEl.textContent = "Tu veux bien passer ta vie avec le boss (MOI) ?";
-  if (descEl) descEl.textContent = "Je te promets : amour, rires, et plein de souvenirs. 💞";
+  if (descEl) descEl.textContent = "Je te promets : amour, rires, et plein plein de souveniiiiirs. 💞";
   if (footerEl) footerEl.textContent = "Essaie de cliquer sur non si tu peux.";
   yesScale = 1;
   yesBtn.style.transform = "";
@@ -671,6 +751,9 @@ yesBtn.addEventListener("click", () => {
       <button class="btn resultBtn" id="startTogether" type="button">Commençons alors !</button>
     </div>
   `;
+
+  // start celebration floating praises for this success screen (rendered in body so they float behind the card)
+  startFloatingPraises();
 
   document.getElementById("startTogether").addEventListener("click", showActivitiesScreen);
 });
