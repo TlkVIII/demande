@@ -211,6 +211,7 @@ function showStep2Rebuilt() {
 }
 
 
+function showActivitiesScreen() {
   // ensure any floating praises are stopped when returning to the activities list
   stopFloatingPraises();
   const buttons = activities
