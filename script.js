@@ -158,7 +158,59 @@ function stopFloatingPraises() {
 }
 
 
-function showActivitiesScreen() {
+function showTropBieeeenScreen() {
+  stopFloatingPraises();
+  card.innerHTML = `
+    <div class="spark" aria-hidden="true"></div>
+    <div class="result resultSuccess screenFade">
+      <button class="backLink" type="button" id="backFromWow">← Retour</button>
+      <div class="big">Trop bieeeen 😭❤️</div>
+      <p class="sub">Tu viens de me rendre la personne la plus heureuse !</p>
+      <button class="btn resultBtn" id="startTogether" type="button">Commençons alors !</button>
+    </div>
+  `;
+  startFloatingPraises();
+  document.getElementById('backFromWow').addEventListener('click', showStep2Rebuilt);
+  document.getElementById('startTogether').addEventListener('click', showActivitiesScreen);
+}
+
+function showStep2Rebuilt() {
+  stopFloatingPraises();
+  card.innerHTML = `
+    <div class="spark" aria-hidden="true"></div>
+    <button class="backLink" type="button" id="step2-back">← Retour</button>
+    <h1>Tu veux bien passer ta vie avec le boss (MOI) ?</h1>
+    <p>Je te promets : Amour, Rires, et plein plein de SOUVENIIIRS. 💞</p>
+    <div class="btnRow">
+      <button class="btn" id="yes-r" type="button" style="background:linear-gradient(135deg,rgba(44,255,179,1),rgba(44,255,179,.65));color:#04130d">Oui ❤️</button>
+      <button class="btn" id="no-r" type="button" style="background:linear-gradient(135deg,rgba(255,77,166,1),rgba(255,77,166,.7));color:#fff">Non 😈</button>
+    </div>
+    <div class="footer">Essaie de cliquer sur non si tu peux.</div>
+  `;
+  document.getElementById('step2-back').addEventListener('click', showTropBieeeenScreen);
+  document.getElementById('yes-r').addEventListener('click', showActivitiesScreen);
+  // Non fuit (version simplifiée sans le mécanisme runaway)
+  document.getElementById('no-r').addEventListener('pointerdown', (e) => {
+    e.preventDefault();
+    noClickCount++;
+    if (noClickCount % 3 === 0) showNoMessage();
+    const btn = document.getElementById('no-r');
+    if (btn) {
+      const cardRect = card.getBoundingClientRect();
+      const pad = 14;
+      const bw = btn.offsetWidth;
+      const bh = btn.offsetHeight;
+      const x = pad + Math.random() * (cardRect.width - bw - pad * 2);
+      const y = pad + Math.random() * (cardRect.height - bh - pad * 2);
+      btn.style.position = 'absolute';
+      btn.style.left = `${x}px`;
+      btn.style.top = `${y}px`;
+      btn.style.transition = 'left .3s ease, top .3s ease';
+    }
+  });
+}
+
+
   // ensure any floating praises are stopped when returning to the activities list
   stopFloatingPraises();
   const buttons = activities
@@ -181,18 +233,7 @@ function showActivitiesScreen() {
     </div>
   `;
 
-  document.getElementById('backToStep2').addEventListener('click', () => {
-    stopFloatingPraises();
-    card.innerHTML = `
-      <div class="spark" aria-hidden="true"></div>
-      <div class="result resultSuccess screenFade">
-        <div class="big">Trop bieeeen 😭❤️</div>
-        <p class="sub">Tu viens de me rendre la personne la plus heureuse !</p>
-        <button class="btn resultBtn" id="startTogether" type="button">Commençons alors !</button>
-      </div>
-    `;
-    document.getElementById("startTogether").addEventListener("click", showActivitiesScreen);
-  });
+  document.getElementById('backToStep2').addEventListener('click', showTropBieeeenScreen);
 
   card.querySelectorAll(".activityBtn").forEach((btn) => {
     btn.addEventListener("click", () => {
@@ -834,38 +875,8 @@ yesBtn.addEventListener("click", () => {
     </div>
   `;
 
-  // start celebration floating praises for this success screen (rendered in body so they float behind the card)
   startFloatingPraises();
 
-  document.getElementById('backFromWow').addEventListener('click', () => {
-    stopFloatingPraises();
-    // Rebuild step 2 card fully since the original DOM is gone
-    card.innerHTML = `
-      <div class="spark" aria-hidden="true"></div>
-      <button class="backLink" type="button" id="step-back-btn-rebuilt">← Retour</button>
-      <h1 style="margin-top:32px">Tu veux bien passer ta vie avec le boss (MOI) ?</h1>
-      <p>Je te promets : Amour, Rires, et plein plein de SOUVENIIIRS. 💞</p>
-      <div class="btnRow">
-        <button class="btn" id="yes-rebuilt" type="button">Oui ❤️</button>
-        <div class="footer" style="margin-top:16px">Essaie de cliquer sur non si tu peux.</div>
-      </div>
-    `;
-    document.getElementById('step-back-btn-rebuilt').addEventListener('click', () => {
-      // go all the way back to the Trop bieeeen screen
-      card.innerHTML = `
-        <div class="spark" aria-hidden="true"></div>
-        <div class="result resultSuccess screenFade">
-          <button class="backLink" type="button" id="backFromWow2">← Retour</button>
-          <div class="big">Trop bieeeen 😭❤️</div>
-          <p class="sub">Tu viens de me rendre la personne la plus heureuse !</p>
-          <button class="btn resultBtn" id="startTogether2" type="button">Commençons alors !</button>
-        </div>
-      `;
-      startFloatingPraises();
-      document.getElementById('backFromWow2').addEventListener('click', () => { stopFloatingPraises(); location.reload(); });
-      document.getElementById('startTogether2').addEventListener('click', showActivitiesScreen);
-    });
-    document.getElementById('yes-rebuilt').addEventListener('click', showActivitiesScreen);
-  });
+  document.getElementById('backFromWow').addEventListener('click', showStep2Rebuilt);
   document.getElementById("startTogether").addEventListener("click", showActivitiesScreen);
 });
