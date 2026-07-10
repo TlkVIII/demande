@@ -1,54 +1,54 @@
 Railway deployment guide
 
-Quick steps to deploy `server.js` to Railway and connect the frontend.
+## Problème SMTP sur Railway
 
-1) Push repo to GitHub (if not already)
+Sur les plans **Free / Trial / Hobby**, Railway **bloque les connexions SMTP** (ports 25, 465, 587).
+C’est pour ça que Gmail renvoie une erreur `SMTP connection timeout` même avec les bons identifiants.
 
-```bash
-git init
-git add .
-git commit -m "Initial"
-# create repo on GitHub then:
-git remote add origin git@github.com:YOUR_USER/YOUR_REPO.git
-git branch -M main
-git push -u origin main
+**Solution recommandée (gratuite) : Resend** — envoi par API HTTPS (port 443), jamais bloqué.
+
+## Configuration Resend (5 minutes)
+
+1. Crée un compte sur https://resend.com (gratuit : 3000 emails/mois)
+2. Va dans **API Keys** → **Create API Key**
+3. Dans Railway → **Variables**, ajoute :
+   - `RESEND_API_KEY` = ta clé `re_...`
+   - `RESEND_FROM` = `Réservation <onboarding@resend.dev>`
+   - `DEFAULT_TO_EMAIL` = l’adresse qui reçoit les notifications
+4. **Important (sans domaine vérifié)** : Resend n’envoie qu’à l’adresse email de ton compte Resend.
+   Inscris-toi avec la même adresse que `DEFAULT_TO_EMAIL`, ou vérifie un domaine dans Resend.
+5. Redéploie le service Railway après avoir ajouté les variables.
+
+Tu peux laisser les variables SMTP Gmail — elles seront ignorées tant que `RESEND_API_KEY` est définie.
+
+## Déploiement Railway
+
+1. Push le repo sur GitHub
+2. Railway → **New Project** → **Deploy from GitHub**
+3. Configure les variables d’environnement (voir ci-dessus)
+4. Railway fournit une URL publique (ex. `https://demande-production.up.railway.app`)
+5. Vérifie que `PROD_BACKEND` dans `script.js` pointe vers cette URL
+
+## Test
+
+- Ouvre le site, confirme une activité
+- Consulte les logs Railway (Deployments → Logs) en cas d’erreur
+
+## Développement local
+
+En local, tu peux utiliser Gmail SMTP sans Resend :
+
+```env
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USER=ton@gmail.com
+SMTP_PASS=mot_de_passe_application
+SMTP_FROM=ton@gmail.com
+DEFAULT_TO_EMAIL=destinataire@example.com
 ```
 
-2) Create Railway project (web UI)
-- Go to https://railway.app and sign up / log in.
-- Click "New Project" -> "Deploy from GitHub".
-- Choose your repository and the folder (root) that contains `package.json`.
-- Railway will detect a Node.js service and start a build.
+Lance `npm start` puis teste avec `node tools/send_test_email.js`.
 
-3) Configure environment variables in Railway project settings
-- SMTP_HOST
-- SMTP_PORT (usually 587)
-- SMTP_USER
-- SMTP_PASS
-- SMTP_FROM (e.g. "Moi <me@example.com>")
-- DEFAULT_TO_EMAIL (recipient address)
+## Upgrade Railway Pro (alternative payante)
 
-4) Deploy and get the public URL
-- After deployment Railway provides a domain like `https://my-app.up.railway.app`.
-- Copy that URL.
-
-5) Update the frontend to call the deployed backend
-- Option A (quick): edit `script.js` and replace the placeholder
-  `https://REPLACE_WITH_YOUR_RAILWAY_URL` in the `PROD_BACKEND` constant with your Railway URL.
-- Option B (better): host frontend on the same domain or use a proxy.
-
-6) Test from an external device
-- Open the frontend (GitHub Pages or local served file) and perform a reservation.
-- Monitor Railway logs (Project -> Deployments -> Logs) for transport errors.
-
-Notes
-- Railway automatically sets `PORT` for the Node process; `server.js` already uses `process.env.PORT`.
-- Keep SMTP credentials secret; set them only in Railway environment variables.
-
-Troubleshooting
-- If SMTP fails, check credentials and provider restrictions (Gmail needs App Password or OAuth).
-- If you use GitHub Pages, update `PROD_BACKEND` in `script.js` or point the frontend to the Railway URL.
-
-If you want, I can:
-- Commit the `PROD_BACKEND` replacement for you once you give me the Railway URL, or
-- Walk you through the Railway web UI step-by-step.
+Le plan Pro débloque SMTP. Railway recommande quand même Resend pour les analytics et la fiabilité.
