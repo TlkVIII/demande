@@ -344,6 +344,8 @@ function showActivityConfirm(activity) {
         <h2 class="confirmTitle">Choisis la date et l'heure</h2>
         <p class="confirmHint">Quand veux-tu faire ${activity.label.toLowerCase()} ?</p>
         <input type="datetime-local" id="activityDateTime" class="datetimeInput" />
+        <p class="confirmHint scheduleOptLabel">Message optionnel — consignes, lieu, détails… ✏️</p>
+        <textarea id="activityMessage" class="textArea scheduleTextarea" placeholder="Ex : retrouve-moi à 14h devant le parc, prévois des chaussures confortables…"></textarea>
         <div class="confirmBtns">
           <button class="btn confirmYes" type="button" id="confirmSchedule">Confirmer</button>
           <button class="btn confirmNo" type="button" id="cancelSchedule">Annuler</button>
@@ -380,13 +382,15 @@ function showActivityConfirm(activity) {
       const chosen = new Date(val);
       const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' };
       const pretty = chosen.toLocaleString(undefined, options);
+      const activityMsg = (document.getElementById('activityMessage').value || '').trim();
 
       const emailSubject = `💖 Nouvelle activité réservée : ${activity.label}`;
-      const emailText = `💖 Ta Baby's a choisi l'activité suivante : ${activity.label}.\n📅 Elle a été réservée pour le ${pretty}.\n✨ J'espère que tu vas lui offrir une très belle expérience et un moment précieux ensemble !`;
+      const emailText = `💖 Ta Baby's a choisi l'activité suivante : ${activity.label}.\n📅 Elle a été réservée pour le ${pretty}.\n${activityMsg ? '📝 Message : ' + activityMsg + '\n' : ''}✨ J'espère que tu vas lui offrir une très belle expérience et un moment précieux ensemble !`;
       const emailHtml = `
         <div style="font-family: Arial, sans-serif; color: #4a2d3f; line-height: 1.6;">
           <p>💖 <strong>Ta Baby's a choisi</strong> l'activité suivante : <strong>${activity.label}</strong>.</p>
           <p>📅 Elle a été réservée pour le <strong>${pretty}</strong>.</p>
+          ${activityMsg ? `<p>📝 <strong>Message :</strong> ${activityMsg.replace(/\n/g, '<br/>')}</p>` : ''}
           <p>✨ J'espère que tu vas lui offrir une très belle expérience et un moment précieux ensemble !</p>
         </div>
       `;
@@ -429,6 +433,7 @@ function showActivityConfirm(activity) {
           <div class="resultIcon">${activity.emoji}</div>
           <div class="big">C'est réservé ! 🎉</div>
           <p class="sub">On se voit pour <strong>${activity.label.toLowerCase()}</strong> le ${pretty}.</p>
+          ${activityMsg ? `<p class="sub scheduleMsg">📝 ${activityMsg}</p>` : ''}
           ${emailSent ? '<p class="sub">Un e-mail automatique a été envoyé à l’adresse configurée.</p>' : `<p class="sub">${emailError || 'Impossible d\'envoyer l\'email automatique (serveur absent).'}</p>`}
           <button class="btn resultBtn" id="backActivities" type="button">Choisir une autre activité</button>
         </div>
@@ -469,7 +474,7 @@ function setStep2() {
   restoreNoIntoRow();
 
   if (titleEl) titleEl.textContent = "Tu veux bien passer ta vie avec le boss (MOI) ?";
-  if (descEl) descEl.textContent = "Je te promets : amour, rires, et plein plein de souveniiiiirs. 💞";
+  if (descEl) descEl.textContent = "Je te promets : Amour, Rires, et plein plein de SOUVENIIIRS. 💞";
   if (footerEl) footerEl.textContent = "Essaie de cliquer sur non si tu peux.";
   yesScale = 1;
   yesBtn.style.transform = "";

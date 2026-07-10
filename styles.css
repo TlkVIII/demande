@@ -681,6 +681,27 @@ canvas#confetti {
   padding: 6px 0 0;
 }
 
+.scheduleOptLabel {
+  margin-top: 6px;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.55);
+  text-align: left;
+}
+
+.scheduleTextarea {
+  min-height: 80px;
+  max-height: 140px;
+  resize: vertical;
+  text-align: left;
+  font-size: 14px;
+}
+
+.scheduleMsg {
+  font-style: italic;
+  color: rgba(255, 255, 255, 0.72) !important;
+  max-width: 36ch;
+}
+
 .datetimeInput {
   margin: 0 auto;
   padding: 10px 12px;
