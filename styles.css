@@ -285,7 +285,7 @@ p {
 }
 
 .ghost {
-  display: none;
+  display: none !important;
   visibility: hidden;
   pointer-events: none;
 }
