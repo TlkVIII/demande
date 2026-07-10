@@ -473,6 +473,10 @@ function setStep2() {
   step = 2;
   restoreNoIntoRow();
 
+  // hide the logo — only visible on the initial "Oh princesse" screen
+  const logoEl = document.getElementById('site-logo');
+  if (logoEl) logoEl.style.display = 'none';
+
   if (titleEl) titleEl.textContent = "Tu veux bien passer ta vie avec le boss (MOI) ?";
   if (descEl) descEl.textContent = "Je te promets : Amour, Rires, et plein plein de SOUVENIIIRS. 💞";
   if (footerEl) footerEl.textContent = "Essaie de cliquer sur non si tu peux.";
