@@ -105,8 +105,7 @@ body {
   position: relative;
   z-index: 2;
   width: min(720px, 92vw);
-  min-height: 390px;
-  border-radius: 34px;
+  min-height: 390px;  border-radius: 34px;
   background:
     radial-gradient(900px 300px at 18% -10%, rgba(255, 77, 166, 0.22), transparent 58%),
     radial-gradient(700px 260px at 96% 6%, rgba(44, 255, 179, 0.16), transparent 60%),
@@ -118,6 +117,17 @@ body {
   padding: 42px 36px 30px;
   overflow: hidden;
   text-align: center;
+}
+
+.site-logo {
+  display: block;
+  width: 64px;
+  height: 64px;
+  object-fit: cover;
+  border-radius: 18px;
+  margin: 0 auto 10px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.28);
+  border: 2px solid rgba(255,255,255,0.14);
 }
 
 .card::before {
