@@ -187,8 +187,8 @@ function showStep2Rebuilt() {
     </div>
     <div class="footer">Essaie de cliquer sur non si tu peux.</div>
   `;
-  document.getElementById('step2-back').addEventListener('click', showTropBieeeenScreen);
-  document.getElementById('yes-r').addEventListener('click', showActivitiesScreen);
+  document.getElementById('step2-back').addEventListener('click', () => location.reload());
+  document.getElementById('yes-r').addEventListener('click', showTropBieeeenScreen);
   // Non fuit (version simplifiée sans le mécanisme runaway)
   document.getElementById('no-r').addEventListener('pointerdown', (e) => {
     e.preventDefault();
