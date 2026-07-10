@@ -9,6 +9,12 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static(__dirname, { dotfiles: 'ignore' }));
 
+app.use((req, res, next) => {
+  req.setTimeout(15000); // 15s request timeout
+  res.setTimeout(15000);
+  next();
+});
+
 const PORT = process.env.PORT || 3001;
 
 app.post('/send-email', async (req, res) => {
@@ -43,6 +49,9 @@ app.post('/send-email', async (req, res) => {
       user: smtpUser,
       pass: smtpPass,
     },
+    connectionTimeout: 10000,
+    greetingTimeout: 10000,
+    socketTimeout: 10000,
   });
 
   try {
