@@ -93,7 +93,7 @@ const activities = [
   {
     label: "Cinéma",
     emoji: "🎞️",
-    image: "./images/cinema.jpg",
+    image: "./images/cinema.JPEG",
   },
   {
     label: "Proposer une activité",
