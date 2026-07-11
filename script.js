@@ -1,6 +1,6 @@
 // Background hearts
 const heartsWrap = document.getElementById("hearts");
-const heartCount = 44;
+const heartCount = 30;
 const heartEmojis = ["❤️", "💕", "💖", "💗", "💘", "💝"];
 
 for (let i = 0; i < heartCount; i++) {
@@ -17,7 +17,7 @@ for (let i = 0; i < heartCount; i++) {
 
   h.style.left = `${left}vw`;
   h.style.animationDelay = `${-delay}s`;
-  h.style.animationDuration = `${dur}s, ${swayDur}s`;
+  h.style.animationDuration = `${dur}s`;
   h.style.fontSize = `${size}px`;
   h.style.opacity = `${opacity}`;
 
@@ -76,17 +76,44 @@ const backgroundImages = [
   "./images/imagefond/IMG_2702.jpg",
 ];
 
+let bgSwapTimeout = null;
+let bgCycleInterval = null;
+const bgTiles = [];
+
+function ensureBackgroundTiles(tileCount) {
+  if (!bgMiniImagesEl) return;
+  if (bgTiles.length === tileCount) return;
+
+  bgMiniImagesEl.innerHTML = '';
+  bgTiles.length = 0;
+
+  const frag = document.createDocumentFragment();
+  for (let i = 0; i < tileCount; i++) {
+    const tile = document.createElement('span');
+    tile.className = 'bg-mini-image';
+    frag.appendChild(tile);
+    bgTiles.push(tile);
+  }
+  bgMiniImagesEl.appendChild(frag);
+}
+
 function setRandomBackground() {
   if (!bgMiniImagesEl || !backgroundImages.length) return;
 
-  bgMiniImagesEl.classList.add('is-fading');
+  const tileCount = Math.min(window.innerWidth < 700 ? 9 : 12, backgroundImages.length);
+  ensureBackgroundTiles(tileCount);
 
-  const tileCount = Math.min(16, backgroundImages.length);
-  const usedIndexes = new Set();
+  for (const tile of bgTiles) {
+    tile.classList.remove('is-visible');
+  }
 
-  window.setTimeout(() => {
+  if (bgSwapTimeout) {
+    clearTimeout(bgSwapTimeout);
+    bgSwapTimeout = null;
+  }
+
+  bgSwapTimeout = window.setTimeout(() => {
     if (!bgMiniImagesEl) return;
-    bgMiniImagesEl.innerHTML = '';
 
     const viewportWidth = window.innerWidth;
     const viewportHeight = window.innerHeight;
@@ -94,47 +121,27 @@ function setRandomBackground() {
     const rows = Math.ceil(tileCount / cols);
     const cellWidth = viewportWidth / cols;
     const cellHeight = viewportHeight / rows;
-    const occupiedRects = [];
+
+    const shuffledIndexes = backgroundImages.map((_, idx) => idx);
+    for (let i = shuffledIndexes.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffledIndexes[i], shuffledIndexes[j]] = [shuffledIndexes[j], shuffledIndexes[i]];
+    }
 
     for (let i = 0; i < tileCount; i++) {
-      let imageIndex = Math.floor(Math.random() * backgroundImages.length);
-      while (usedIndexes.has(imageIndex) && usedIndexes.size < backgroundImages.length) {
-        imageIndex = Math.floor(Math.random() * backgroundImages.length);
-      }
-      usedIndexes.add(imageIndex);
+      const imageIndex = shuffledIndexes[i];
 
-      const tile = document.createElement('span');
-      tile.className = 'bg-mini-image';
-      const width = 62 + Math.random() * 88;
-      const height = 62 + Math.random() * 88;
+      const tile = bgTiles[i];
+      const width = 70 + Math.random() * 72;
+      const height = 70 + Math.random() * 72;
       const col = i % cols;
       const row = Math.floor(i / cols);
       const baseX = col * cellWidth;
       const baseY = row * cellHeight;
-      const maxOffsetX = Math.max(0, cellWidth - width - 18);
-      const maxOffsetY = Math.max(0, cellHeight - height - 18);
-      const x = baseX + 9 + Math.random() * maxOffsetX;
-      const y = baseY + 9 + Math.random() * maxOffsetY;
-      const rect = { x, y, width, height };
-
-      let overlap = false;
-      for (const placedRect of occupiedRects) {
-        const separated =
-          rect.x + rect.width + 16 <= placedRect.x ||
-          placedRect.x + placedRect.width + 16 <= rect.x ||
-          rect.y + rect.height + 16 <= placedRect.y ||
-          placedRect.y + placedRect.height + 16 <= rect.y;
-        if (!separated) {
-          overlap = true;
-          break;
-        }
-      }
-
-      if (overlap) {
-        continue;
-      }
-
-      occupiedRects.push(rect);
+      const maxOffsetX = Math.max(0, cellWidth - width - 24);
+      const maxOffsetY = Math.max(0, cellHeight - height - 24);
+      const x = baseX + 12 + Math.random() * maxOffsetX;
+      const y = baseY + 12 + Math.random() * maxOffsetY;
 
       tile.style.setProperty('--mini-src', `url("${backgroundImages[imageIndex]}")`);
       tile.style.setProperty('--mini-w', `${width}px`);
@@ -142,23 +149,20 @@ function setRandomBackground() {
       tile.style.setProperty('--mini-x', `${x}px`);
       tile.style.setProperty('--mini-y', `${y}px`);
       tile.style.setProperty('--mini-rot', `${Math.random() * 24 - 12}deg`);
-      tile.style.setProperty('--mini-opacity', `${0.16 + Math.random() * 0.20}`);
-
-      bgMiniImagesEl.appendChild(tile);
+      tile.style.setProperty('--mini-opacity', `${0.18 + Math.random() * 0.18}`);
 
       window.requestAnimationFrame(() => {
         tile.classList.add('is-visible');
       });
     }
-
-    window.requestAnimationFrame(() => {
-      bgMiniImagesEl.classList.remove('is-fading');
-    });
-  }, 360);
+  }, 140);
 }
 
 setRandomBackground();
-window.setInterval(setRandomBackground, 7000);
+bgCycleInterval = window.setInterval(setRandomBackground, 7000);
+window.addEventListener('resize', () => {
+  setRandomBackground();
+});
 
 
 const activities = [
