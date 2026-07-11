@@ -228,6 +228,7 @@ const PRAISE_TEXTS = [
 ];
 let _floatingPraisesInterval = null;
 let _floatingPraisesContainer = null;
+let _buttonConfettiLayer = null;
 
 function startFloatingPraises(parent = document.body) {
   stopFloatingPraises();
@@ -283,6 +284,65 @@ function stopFloatingPraises() {
   }
 }
 
+function getButtonConfettiLayer() {
+  if (_buttonConfettiLayer && _buttonConfettiLayer.parentElement) return _buttonConfettiLayer;
+
+  _buttonConfettiLayer = document.createElement('div');
+  _buttonConfettiLayer.className = 'button-confetti-layer';
+  document.body.appendChild(_buttonConfettiLayer);
+  return _buttonConfettiLayer;
+}
+
+function launchButtonConfetti(button, count = 34) {
+  if (!button) return;
+
+  const layer = getButtonConfettiLayer();
+  const rect = button.getBoundingClientRect();
+  const originX = rect.left + rect.width / 2;
+  const originY = rect.top + rect.height / 2;
+  const colors = ['#2cffb3', '#ff4da6', '#ffd166', '#ffffff', '#8c5aff'];
+
+  for (let i = 0; i < count; i++) {
+    const piece = document.createElement('span');
+    piece.className = 'btn-confetti-piece';
+
+    const angle = (-120 + Math.random() * 240) * (Math.PI / 180);
+    const distance = 90 + Math.random() * 180;
+    const dx = Math.cos(angle) * distance;
+    const dy = Math.sin(angle) * distance - (90 + Math.random() * 130);
+
+    piece.style.left = `${originX}px`;
+    piece.style.top = `${originY}px`;
+    piece.style.width = `${4 + Math.random() * 5}px`;
+    piece.style.height = `${6 + Math.random() * 7}px`;
+    piece.style.background = colors[Math.floor(Math.random() * colors.length)];
+    piece.style.setProperty('--dx', `${dx.toFixed(1)}px`);
+    piece.style.setProperty('--dy', `${dy.toFixed(1)}px`);
+    piece.style.setProperty('--rot', `${(Math.random() * 520 - 260).toFixed(1)}deg`);
+    piece.style.animationDuration = `${760 + Math.random() * 280}ms`;
+
+    layer.appendChild(piece);
+
+    window.setTimeout(() => {
+      if (piece.parentElement) piece.parentElement.removeChild(piece);
+    }, 1200);
+  }
+}
+
+function runYesConfettiThen(button, next) {
+  if (!button || button.dataset.busy === '1') return;
+  button.dataset.busy = '1';
+  launchButtonConfetti(button);
+  window.setTimeout(() => {
+    try {
+      next();
+    } finally {
+      // Unlock button in case it remains in DOM for the next step.
+      if (button && button.dataset) button.dataset.busy = '0';
+    }
+  }, 360);
+}
+
 
 function showTropBieeeenScreen() {
   stopFloatingPraises();
@@ -314,7 +374,10 @@ function showStep2Rebuilt() {
     <div class="footer">Essaie de cliquer sur non si tu peux.</div>
   `;
   document.getElementById('step2-back').addEventListener('click', () => location.reload());
-  document.getElementById('yes-r').addEventListener('click', showTropBieeeenScreen);
+  const yesRebuiltBtn = document.getElementById('yes-r');
+  yesRebuiltBtn.addEventListener('click', () => {
+    runYesConfettiThen(yesRebuiltBtn, showTropBieeeenScreen);
+  });
   // Non fuit (version simplifiée sans le mécanisme runaway)
   document.getElementById('no-r').addEventListener('pointerdown', (e) => {
     e.preventDefault();
@@ -566,7 +629,6 @@ function showActivityConfirm(activity) {
         sendButton.textContent = 'Envoi...';
         sendButton.disabled = true;
       }
-      burst(520);
       const chosen = new Date(val);
       const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' };
       const pretty = chosen.toLocaleString(undefined, options);
@@ -899,136 +961,28 @@ noBtn.addEventListener("click", (e) => {
   moveNo(false);
 });
 
-// Confetti
-const cvs = document.getElementById("confetti");
-const ctx = cvs.getContext("2d");
-let confetti = [];
-let raf;
-let confettiRunning = false;
-
-function resize() {
-  const dpr = window.devicePixelRatio || 1;
-  cvs.width = Math.floor(window.innerWidth * dpr);
-  cvs.height = Math.floor(window.innerHeight * dpr);
-  ctx.setTransform(1, 0, 0, 1, 0, 0);
-  ctx.scale(dpr, dpr);
-}
-
-window.addEventListener("resize", resize);
-resize();
-
-function burst(count = 380) {
-  const colors = ["#2cffb3", "#ff4da6", "#8c5aff", "#ffffff", "#ffd1e8"];
-  const n = count;
-
-  for (let i = 0; i < n; i++) {
-    // Guaranteed balanced spawn from all 4 sides
-    const edge = i % 4; // 0:left 1:right 2:top 3:bottom
-    let startX = 0;
-    let startY = 0;
-    let vx = 0;
-    let vy = 0;
-
-    if (edge === 0) {
-      // left
-      startX = -20;
-      startY = Math.random() * window.innerHeight;
-      vx = 4 + Math.random() * 7;
-      vy = (Math.random() * 2 - 1) * 3.2;
-    } else if (edge === 1) {
-      // right
-      startX = window.innerWidth + 20;
-      startY = Math.random() * window.innerHeight;
-      vx = -(4 + Math.random() * 7);
-      vy = (Math.random() * 2 - 1) * 3.2;
-    } else if (edge === 2) {
-      // top
-      startX = Math.random() * window.innerWidth;
-      startY = -20;
-      vx = (Math.random() * 2 - 1) * 3.2;
-      vy = 3 + Math.random() * 7;
-    } else {
-      // bottom
-      startX = Math.random() * window.innerWidth;
-      startY = window.innerHeight + 20;
-      vx = (Math.random() * 2 - 1) * 3.2;
-      vy = -(4 + Math.random() * 7);
-    }
-
-    confetti.push({
-      x: startX,
-      y: startY,
-      vx,
-      vy,
-      g: 0.18 + Math.random() * 0.12,
-      r: 2 + Math.random() * 4,
-      a: 1,
-      rot: Math.random() * Math.PI,
-      vr: (Math.random() * 2 - 1) * 0.2,
-      c: colors[Math.floor(Math.random() * colors.length)],
-    });
-  }
-
-  if (!confettiRunning) {
-    confettiRunning = true;
-    animate();
-  }
-}
-
-function animate() {
-  ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
-
-  for (const p of confetti) {
-    p.vy += p.g;
-    p.x += p.vx;
-    p.y += p.vy;
-    p.rot += p.vr;
-    p.a *= 0.992;
-
-    ctx.save();
-    ctx.globalAlpha = p.a;
-    ctx.translate(p.x, p.y);
-    ctx.rotate(p.rot);
-    ctx.fillStyle = p.c;
-    ctx.fillRect(-p.r, -p.r, p.r * 2.2, p.r * 1.2);
-    ctx.restore();
-  }
-
-  confetti = confetti.filter((p) => p.a > 0.05 && p.y < window.innerHeight + 60);
-  if (confetti.length) {
-    raf = requestAnimationFrame(animate);
-  } else {
-    confettiRunning = false;
-  }
-}
-
-yesBtn.addEventListener("pointerdown", () => {
-  // Show confetti as soon as the press starts
-  burst(320);
-});
-
 yesBtn.addEventListener("click", () => {
-  // Add an extra bigger wave on click
-  burst(520);
   resetNoCounter();
   if (step === 1) {
-    setStep2();
+    runYesConfettiThen(yesBtn, setStep2);
     return;
   }
 
-  // Step 2: final cute success state
-  card.innerHTML = `
-    <button class="backLink" type="button" id="backFromWow">← Retour</button>
-    <div class="spark" aria-hidden="true"></div>
-    <div class="result resultSuccess screenFade">
-      <div class="big">Trop bieeeen 😭❤️</div>
-      <p class="sub">Tu viens de me rendre la personne la plus heureuse !</p>
-      <button class="btn resultBtn" id="startTogether" type="button">Commençons alors !</button>
-    </div>
-  `;
+  runYesConfettiThen(yesBtn, () => {
+    // Step 2: final cute success state
+    card.innerHTML = `
+      <button class="backLink" type="button" id="backFromWow">← Retour</button>
+      <div class="spark" aria-hidden="true"></div>
+      <div class="result resultSuccess screenFade">
+        <div class="big">Trop bieeeen 😭❤️</div>
+        <p class="sub">Tu viens de me rendre la personne la plus heureuse !</p>
+        <button class="btn resultBtn" id="startTogether" type="button">Commençons alors !</button>
+      </div>
+    `;
 
-  startFloatingPraises();
+    startFloatingPraises();
 
-  document.getElementById('backFromWow').addEventListener('click', showStep2Rebuilt);
-  document.getElementById("startTogether").addEventListener("click", showActivitiesScreen);
+    document.getElementById('backFromWow').addEventListener('click', showStep2Rebuilt);
+    document.getElementById("startTogether").addEventListener("click", showActivitiesScreen);
+  });
 });
