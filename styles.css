@@ -633,6 +633,10 @@ p {
     border-radius: 999px;
     font-weight: 700;
     font-size: 14px;
+    max-width: min(78vw, 240px);
+    white-space: normal;
+    line-height: 1.2;
+    text-align: center;
     box-shadow: 0 8px 20px rgba(0,0,0,0.18);
     transform-origin: center;
     opacity: 0;
@@ -1054,7 +1058,7 @@ p {
   .datetimeInput { padding: 13px 14px; font-size: 14px; }
 
   /* Textes flottants de célébration */
-  .floating-praise { font-size: 12px; padding: 6px 10px; }
+  .floating-praise { font-size: 12px; padding: 6px 10px; max-width: min(82vw, 200px); }
 
   /* Toast Non */
   .no-message-toast {
