@@ -226,8 +226,11 @@ const PRAISE_TEXTS = [
   { text: "Formidable", emoji: "✨" },
   { text: "C'est la fête", emoji: "🥳" },
 ];
+const PRAISE_LANES = [8, 22, 36, 50, 64, 78, 92];
+const PRAISE_LANES_MOBILE = [16, 34, 50, 66, 84];
 let _floatingPraisesInterval = null;
 let _floatingPraisesContainer = null;
+const _floatingPraiseLaneBusy = new Set();
 let _buttonConfettiLayer = null;
 
 function startFloatingPraises(parent = document.body) {
@@ -237,22 +240,38 @@ function startFloatingPraises(parent = document.body) {
   parent.appendChild(_floatingPraisesContainer);
 
   function spawnOne() {
+    if (!_floatingPraisesContainer) return;
+
+    const lanePool = window.innerWidth <= 560 ? PRAISE_LANES_MOBILE : PRAISE_LANES;
+    const freeLanes = lanePool.filter((lane) => !_floatingPraiseLaneBusy.has(lane));
+    if (!freeLanes.length) return;
+    const lane = freeLanes[Math.floor(Math.random() * freeLanes.length)];
+
     const info = PRAISE_TEXTS[Math.floor(Math.random() * PRAISE_TEXTS.length)];
     const el = document.createElement('span');
     el.className = 'floating-praise';
     el.innerHTML = `${info.emoji} ${info.text}`;
 
-    // Random horizontal start inside the parent
-    const parentRect = parent.getBoundingClientRect();
-    const x = Math.random() * Math.max(0, parentRect.width - 120);
-    el.style.left = `${x}px`;
+    _floatingPraiseLaneBusy.add(lane);
+    const viewportW = window.innerWidth;
+    const baseX = (lane / 100) * viewportW;
+    el.style.left = `${baseX}px`;
+    el.style.transform = 'translateX(-50%)';
     // Slight random delay so they don't all look the same
     el.style.animationDelay = `${Math.random() * 0.6}s`;
 
     _floatingPraisesContainer.appendChild(el);
 
+    // Keep the bubble inside screen bounds even for wider text.
+    const bubbleRect = el.getBoundingClientRect();
+    const halfW = bubbleRect.width / 2;
+    const safeMargin = window.innerWidth <= 560 ? 18 : 24;
+    const clampedX = Math.max(halfW + safeMargin, Math.min(viewportW - halfW - safeMargin, baseX));
+    el.style.left = `${clampedX}px`;
+
     // Remove after animation (2.8s matches CSS animation)
     window.setTimeout(() => {
+      _floatingPraiseLaneBusy.delete(lane);
       if (el && el.parentElement) el.parentElement.removeChild(el);
     }, 3000);
   }
@@ -268,6 +287,7 @@ function stopFloatingPraises() {
     clearInterval(_floatingPraisesInterval);
     _floatingPraisesInterval = null;
   }
+  _floatingPraiseLaneBusy.clear();
   if (_floatingPraisesContainer) {
     // fade out existing children quickly
     _floatingPraisesContainer.querySelectorAll('.floating-praise').forEach((el) => {
