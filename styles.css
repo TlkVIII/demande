@@ -396,12 +396,6 @@ p {
   letter-spacing: 0.1px;
 }
 
-canvas#confetti {
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-}
-
 .result {
   display: grid;
   gap: 14px;
@@ -650,6 +644,29 @@ canvas#confetti {
     10% { opacity: 1; }
     70% { transform: translateY(-90px) scale(1.02); opacity: 1; }
     100% { transform: translateY(-140px) scale(0.98); opacity: 0; }
+  }
+
+  .button-confetti-layer {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 40;
+    overflow: hidden;
+  }
+
+  .btn-confetti-piece {
+    position: fixed;
+    border-radius: 1px;
+    opacity: 0;
+    transform: translate3d(0, 0, 0) rotate(0deg);
+    animation: btnConfettiPop 900ms cubic-bezier(.2,.8,.2,1) forwards;
+    will-change: transform, opacity;
+  }
+
+  @keyframes btnConfettiPop {
+    0% { opacity: 0; transform: translate3d(0, 0, 0) rotate(0deg) scale(0.9); }
+    12% { opacity: 1; }
+    100% { opacity: 0; transform: translate3d(var(--dx), var(--dy), 0) rotate(var(--rot)) scale(1); }
   }
   @media (max-width: 520px) {
     .textInput, .textArea, .datetimeInput { min-width: 100%; }
