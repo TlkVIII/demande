@@ -730,7 +730,7 @@ function showActivityConfirm(activity) {
         <div class="result screenFade">
           <div class="resultIcon">${activity.emoji}</div>
           <div class="big">C'est réservé ! 🎉</div>
-          <p class="sub">On se voit pour <strong>${activity.label.toLowerCase()}</strong> le ${pretty}.</p>
+          <p class="sub">On se voit pour <strong>${activity.label.toLowerCase()}</strong> le ${pretty}h.</p>
           ${activityMsg ? `<p class="sub scheduleMsg">📝 ${activityMsg}</p>` : ''}
           ${emailSent ? '<p class="sub">Un e-mail automatique a été envoyé à l’adresse configurée.</p>' : `<p class="sub">${emailError || 'Impossible d\'envoyer l\'email automatique (serveur absent).'}</p>`}
           <button class="btn resultBtn" id="backActivities" type="button">Choisir une autre activité</button>
