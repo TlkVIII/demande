@@ -92,6 +92,13 @@ async function sendViaSmtp({ from, to, subject, text, html, smtpHost, smtpPort, 
     text,
     html: html || `<p>${text}</p>`,
     attachments,
+    icalEvent: attachments.find((att) => att.contentType && att.contentType.includes('text/calendar'))
+      ? {
+          method: 'REQUEST',
+          filename: 'reservation.ics',
+          content: attachments.find((att) => att.contentType && att.contentType.includes('text/calendar')).content,
+        }
+      : undefined,
     headers: {
       'MIME-Version': '1.0',
     },
@@ -176,10 +183,24 @@ function buildCalendarAttachment(calendarEvent) {
 
   lines.push('END:VEVENT', 'END:VCALENDAR');
 
+  const folded = lines
+    .map((line) => {
+      const chunks = [];
+      let remaining = line;
+      while (remaining.length > 75) {
+        chunks.push(remaining.slice(0, 75));
+        remaining = ` ${remaining.slice(75)}`;
+      }
+      chunks.push(remaining);
+      return chunks.join('\r\n');
+    })
+    .join('\r\n');
+
   return {
     filename: 'reservation.ics',
-    content: lines.join('\r\n'),
+    content: folded,
     contentType: 'text/calendar; charset=utf-8; method=REQUEST',
+    contentDisposition: 'attachment',
   };
 }
 
