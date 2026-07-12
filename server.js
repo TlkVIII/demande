@@ -44,6 +44,7 @@ async function sendViaResend({ from, to, subject, text, html }) {
   const resendAttachments = attachments.map((att) => ({
     filename: att.filename,
     content: Buffer.from(att.content, 'utf8').toString('base64'),
+    contentType: att.contentType,
   }));
   const response = await fetch('https://api.resend.com/emails', {
     method: 'POST',
@@ -145,6 +146,8 @@ function buildCalendarAttachment(calendarEvent) {
 
   const dtStamp = toIcsDate(new Date().toISOString());
   const uid = `demande-${Date.now()}-${Math.random().toString(36).slice(2)}@tlkviii.github.io`;
+  const organizer = calendarEvent.organizerEmail || process.env.RESEND_FROM || process.env.SMTP_FROM || 'onboarding@resend.dev';
+  const attendee = calendarEvent.attendeeEmail || process.env.DEFAULT_TO_EMAIL || process.env.MAIL_TO || organizer;
 
   const lines = [
     'BEGIN:VCALENDAR',
@@ -152,17 +155,24 @@ function buildCalendarAttachment(calendarEvent) {
     'CALSCALE:GREGORIAN',
     'METHOD:REQUEST',
     'PRODID:-//tlkviii//demande//FR',
+    'X-WR-CALNAME:Demande',
+    'X-WR-TIMEZONE:UTC',
     'BEGIN:VEVENT',
     `UID:${uid}`,
     `DTSTAMP:${dtStamp}`,
     `DTSTART:${dtStart}`,
     `DTEND:${dtEnd}`,
     `SUMMARY:${icsEscape(calendarEvent.title)}`,
+    'STATUS:CONFIRMED',
+    'TRANSP:OPAQUE',
+    `ORGANIZER:mailto:${icsEscape(organizer)}`,
+    `ATTENDEE;CN=${icsEscape(attendee)};RSVP=TRUE:mailto:${icsEscape(attendee)}`,
   ];
 
   if (calendarEvent.description) lines.push(`DESCRIPTION:${icsEscape(calendarEvent.description)}`);
   if (calendarEvent.location) lines.push(`LOCATION:${icsEscape(calendarEvent.location)}`);
   if (calendarEvent.url) lines.push(`URL:${icsEscape(calendarEvent.url)}`);
+  lines.push('BEGIN:VALARM', 'TRIGGER:-PT15M', 'ACTION:DISPLAY', `DESCRIPTION:${icsEscape(calendarEvent.title)}`, 'END:VALARM');
 
   lines.push('END:VEVENT', 'END:VCALENDAR');
 
