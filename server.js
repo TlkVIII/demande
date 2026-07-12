@@ -40,6 +40,11 @@ function normalizeSmtpPass(pass) {
 
 async function sendViaResend({ from, to, subject, text, html }) {
   const apiKey = process.env.RESEND_API_KEY;
+  const attachments = arguments[0].attachments || [];
+  const resendAttachments = attachments.map((att) => ({
+    filename: att.filename,
+    content: Buffer.from(att.content, 'utf8').toString('base64'),
+  }));
   const response = await fetch('https://api.resend.com/emails', {
     method: 'POST',
     headers: {
@@ -52,6 +57,7 @@ async function sendViaResend({ from, to, subject, text, html }) {
       subject,
       text,
       html: html || `<p>${text}</p>`,
+      ...(resendAttachments.length ? { attachments: resendAttachments } : {}),
     }),
   });
 
@@ -63,7 +69,7 @@ async function sendViaResend({ from, to, subject, text, html }) {
   return { messageId: data.id, provider: 'resend' };
 }
 
-async function sendViaSmtp({ from, to, subject, text, html, smtpHost, smtpPort, smtpUser, smtpPass }) {
+async function sendViaSmtp({ from, to, subject, text, html, smtpHost, smtpPort, smtpUser, smtpPass, attachments = [] }) {
   const transporter = nodemailer.createTransport({
     host: smtpHost,
     port: smtpPort,
@@ -84,6 +90,7 @@ async function sendViaSmtp({ from, to, subject, text, html, smtpHost, smtpPort, 
     subject,
     text,
     html: html || `<p>${text}</p>`,
+    attachments,
     headers: {
       'MIME-Version': '1.0',
     },
@@ -101,8 +108,73 @@ function isSmtpTimeout(err) {
   );
 }
 
+function icsEscape(value) {
+  return String(value || '')
+    .replace(/\\/g, '\\\\')
+    .replace(/\n/g, '\\n')
+    .replace(/,/g, '\\,')
+    .replace(/;/g, '\\;');
+}
+
+function toIcsDate(isoString) {
+  const date = new Date(isoString);
+  if (Number.isNaN(date.getTime())) return null;
+
+  const pad = (n) => String(n).padStart(2, '0');
+  return (
+    date.getUTCFullYear() +
+    pad(date.getUTCMonth() + 1) +
+    pad(date.getUTCDate()) +
+    'T' +
+    pad(date.getUTCHours()) +
+    pad(date.getUTCMinutes()) +
+    pad(date.getUTCSeconds()) +
+    'Z'
+  );
+}
+
+function buildCalendarAttachment(calendarEvent) {
+  if (!calendarEvent || !calendarEvent.title || !calendarEvent.startIso) return null;
+
+  const dtStart = toIcsDate(calendarEvent.startIso);
+  if (!dtStart) return null;
+
+  const endIso = calendarEvent.endIso || new Date(new Date(calendarEvent.startIso).getTime() + 60 * 60 * 1000).toISOString();
+  const dtEnd = toIcsDate(endIso);
+  if (!dtEnd) return null;
+
+  const dtStamp = toIcsDate(new Date().toISOString());
+  const uid = `demande-${Date.now()}-${Math.random().toString(36).slice(2)}@tlkviii.github.io`;
+
+  const lines = [
+    'BEGIN:VCALENDAR',
+    'VERSION:2.0',
+    'CALSCALE:GREGORIAN',
+    'METHOD:REQUEST',
+    'PRODID:-//tlkviii//demande//FR',
+    'BEGIN:VEVENT',
+    `UID:${uid}`,
+    `DTSTAMP:${dtStamp}`,
+    `DTSTART:${dtStart}`,
+    `DTEND:${dtEnd}`,
+    `SUMMARY:${icsEscape(calendarEvent.title)}`,
+  ];
+
+  if (calendarEvent.description) lines.push(`DESCRIPTION:${icsEscape(calendarEvent.description)}`);
+  if (calendarEvent.location) lines.push(`LOCATION:${icsEscape(calendarEvent.location)}`);
+  if (calendarEvent.url) lines.push(`URL:${icsEscape(calendarEvent.url)}`);
+
+  lines.push('END:VEVENT', 'END:VCALENDAR');
+
+  return {
+    filename: 'reservation.ics',
+    content: lines.join('\r\n'),
+    contentType: 'text/calendar; charset=utf-8; method=REQUEST',
+  };
+}
+
 app.post('/send-email', async (req, res) => {
-  const { subject, text, html } = req.body;
+  const { subject, text, html, calendarEvent } = req.body;
   if (!subject || !text) {
     return res.status(400).json({ error: 'subject and text required' });
   }
@@ -132,8 +204,12 @@ app.post('/send-email', async (req, res) => {
   }
 
   try {
+    const attachments = [];
+    const calendarAttachment = buildCalendarAttachment(calendarEvent);
+    if (calendarAttachment) attachments.push(calendarAttachment);
+
     if (resendKey) {
-      const info = await sendViaResend({ from: resendFrom, to, subject, text, html });
+      const info = await sendViaResend({ from: resendFrom, to, subject, text, html, attachments });
       return res.json(info);
     }
 
@@ -143,6 +219,7 @@ app.post('/send-email', async (req, res) => {
       subject,
       text,
       html,
+      attachments,
       smtpHost,
       smtpPort,
       smtpUser,

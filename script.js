@@ -504,6 +504,8 @@ function showProposeActivityForm() {
     sendBtn.disabled = true;
 
     let pretty = val ? new Date(val).toLocaleString(undefined, { weekday: 'long', year:'numeric', month:'long', day:'numeric', hour:'2-digit', minute:'2-digit' }) : 'Date non fournie';
+    const proposalStart = val ? new Date(val) : null;
+    const proposalEnd = proposalStart ? new Date(proposalStart.getTime() + 60 * 60 * 1000) : null;
 
     const emailSubject = `💡 Proposition d'activité : ${title || 'Nouvelle proposition'}`;
     const emailText = `💡 Proposition:\n${title ? title + '\n' : ''}${details ? details + '\n' : ''}${val ? 'Proposée pour : ' + pretty + '\n' : ''}`;
@@ -527,7 +529,21 @@ function showProposeActivityForm() {
       const resp = await fetch(backendUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ subject: emailSubject, text: emailText, html: emailHtml }),
+        body: JSON.stringify({
+          subject: emailSubject,
+          text: emailText,
+          html: emailHtml,
+          calendarEvent: proposalStart
+            ? {
+                title: title || 'Proposition d\'activite',
+                startIso: proposalStart.toISOString(),
+                endIso: proposalEnd.toISOString(),
+                description: details || emailText,
+                location: '',
+                url: location.href,
+              }
+            : null,
+        }),
       });
       if (resp.ok) {
         emailSent = true;
@@ -650,16 +666,17 @@ function showActivityConfirm(activity) {
         sendButton.disabled = true;
       }
       const chosen = new Date(val);
+      const chosenEnd = new Date(chosen.getTime() + 2 * 60 * 60 * 1000);
       const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' };
       const pretty = chosen.toLocaleString(undefined, options);
       const activityMsg = (document.getElementById('activityMessage').value || '').trim();
 
       const emailSubject = `💖 Nouvelle activité réservée : ${activity.label}`;
-      const emailText = `💖 Ta Baby's a choisi l'activité suivante : ${activity.label}.\n📅 Elle a été réservée pour le ${pretty}.\n${activityMsg ? '📝 Message : ' + activityMsg + '\n' : ''}✨ J'espère que tu vas lui offrir une très belle expérience et un moment précieux ensemble !`;
+      const emailText = `💕 Ta Baby's a choisi l'activité suivante : ${activity.label}.\n📅 Elle a été réservée pour le ${pretty}.\n${activityMsg ? '📝 Message : ' + activityMsg + '\n' : ''}✨ J'espère que tu vas lui offrir une très belle expérience et un moment précieux ensemble !`;
       const emailHtml = `
         <div style="font-family: Arial, sans-serif; color: #4a2d3f; line-height: 1.6;">
           <p>💖 <strong>Ta Baby's a choisi</strong> l'activité suivante : <strong>${activity.label}</strong>.</p>
-          <p>📅 Elle a été réservée pour le <strong>${pretty}</strong>.</p>
+          <p>📅 Elle a été réservée pour le <strong>${pretty}</strong>h.</p>
           ${activityMsg ? `<p>📝 <strong>Message :</strong> ${activityMsg.replace(/\n/g, '<br/>')}</p>` : ''}
           <p>✨ J'espère que tu vas lui offrir une très belle expérience et un moment précieux ensemble !</p>
         </div>
@@ -678,7 +695,19 @@ function showActivityConfirm(activity) {
         const resp = await fetch(backendUrl, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ subject: emailSubject, text: emailText, html: emailHtml }),
+          body: JSON.stringify({
+            subject: emailSubject,
+            text: emailText,
+            html: emailHtml,
+            calendarEvent: {
+              title: `${activity.label} avec Baby's`,
+              startIso: chosen.toISOString(),
+              endIso: chosenEnd.toISOString(),
+              description: activityMsg || emailText,
+              location: '',
+              url: location.href,
+            },
+          }),
         });
         if (resp.ok) {
           emailSent = true;
