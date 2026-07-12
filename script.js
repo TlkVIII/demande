@@ -363,6 +363,19 @@ function runYesConfettiThen(button, next) {
   }, 360);
 }
 
+function buildCalendarIcsLink(calendarEvent) {
+  if (!calendarEvent) return '';
+  const payload = btoa(unescape(encodeURIComponent(JSON.stringify(calendarEvent))))
+    .replace(/\+/g, '-')
+    .replace(/\//g, '_')
+    .replace(/=+$/g, '');
+  const httpsUrl = `https://demande-production.up.railway.app/calendar.ics?event=${payload}`;
+  return {
+    httpsUrl,
+    webcalUrl: httpsUrl.replace(/^https:/, 'webcal:'),
+  };
+}
+
 
 function showTropBieeeenScreen() {
   stopFloatingPraises();
@@ -506,6 +519,16 @@ function showProposeActivityForm() {
     let pretty = val ? new Date(val).toLocaleString(undefined, { weekday: 'long', year:'numeric', month:'long', day:'numeric', hour:'2-digit', minute:'2-digit' }) : 'Date non fournie';
     const proposalStart = val ? new Date(val) : null;
     const proposalEnd = proposalStart ? new Date(proposalStart.getTime() + 60 * 60 * 1000) : null;
+    const proposalCalendarLinks = proposalStart
+      ? buildCalendarIcsLink({
+          title: title || 'Proposition d\'activite',
+          startIso: proposalStart.toISOString(),
+          endIso: proposalEnd.toISOString(),
+          description: details || emailText,
+          location: '',
+          url: location.href,
+        })
+      : null;
 
     const emailSubject = `💡 Proposition d'activité : ${title || 'Nouvelle proposition'}`;
     const emailText = `💡 Proposition:\n${title ? title + '\n' : ''}${details ? details + '\n' : ''}${val ? 'Proposée pour : ' + pretty + '\n' : ''}`;
@@ -515,6 +538,7 @@ function showProposeActivityForm() {
         ${title ? `<p><strong>Titre:</strong> ${title}</p>` : ''}
         ${details ? `<p><strong>Détails:</strong> ${details.replace(/\n/g,'<br/>')}</p>` : ''}
         ${val ? `<p><strong>Date proposée:</strong> ${pretty}</p>` : '<p><em>Aucune date proposée</em></p>'}
+        ${proposalCalendarLinks ? `<p><a href="${proposalCalendarLinks.webcalUrl}">Ajouter au calendrier</a> | <a href="${proposalCalendarLinks.httpsUrl}">Ouvrir le fichier calendrier</a></p>` : ''}
       </div>
     `;
 
@@ -533,6 +557,7 @@ function showProposeActivityForm() {
           subject: emailSubject,
           text: emailText,
           html: emailHtml,
+          calendarUrl: proposalCalendarLinks ? proposalCalendarLinks.httpsUrl : '',
           calendarEvent: proposalStart
             ? {
                 title: title || 'Proposition d\'activite',
@@ -670,14 +695,23 @@ function showActivityConfirm(activity) {
       const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' };
       const pretty = chosen.toLocaleString(undefined, options);
       const activityMsg = (document.getElementById('activityMessage').value || '').trim();
+      const activityCalendarLinks = buildCalendarIcsLink({
+        title: `${activity.label} avec Baby's`,
+        startIso: chosen.toISOString(),
+        endIso: chosenEnd.toISOString(),
+        description: activityMsg || emailText,
+        location: '',
+        url: location.href,
+      });
 
       const emailSubject = `💖 Nouvelle activité réservée : ${activity.label}`;
       const emailText = `💕 Ta Baby's a choisi l'activité suivante : ${activity.label}.\n📅 Elle a été réservée pour le ${pretty}.\n${activityMsg ? '📝 Message : ' + activityMsg + '\n' : ''}✨ J'espère que tu vas lui offrir une très belle expérience et un moment précieux ensemble !`;
       const emailHtml = `
         <div style="font-family: Arial, sans-serif; color: #4a2d3f; line-height: 1.6;">
           <p>💖 <strong>Ta Baby's a choisi</strong> l'activité suivante : <strong>${activity.label}</strong>.</p>
-          <p>📅 Elle a été réservée pour le <strong>${pretty}</strong><strong>h</strong>.</p>
+          <p>📅 Elle a été réservée pour le <strong>${pretty}</strong>.</p>
           ${activityMsg ? `<p>📝 <strong>Message :</strong> ${activityMsg.replace(/\n/g, '<br/>')}</p>` : ''}
+          ${activityCalendarLinks ? `<p><a href="${activityCalendarLinks.webcalUrl}">Ajouter au calendrier</a> | <a href="${activityCalendarLinks.httpsUrl}">Ouvrir le fichier calendrier</a></p>` : ''}
           <p>✨ J'espère que tu vas lui offrir une très belle expérience et un moment précieux ensemble !</p>
         </div>
       `;
@@ -699,6 +733,7 @@ function showActivityConfirm(activity) {
             subject: emailSubject,
             text: emailText,
             html: emailHtml,
+            calendarUrl: activityCalendarLinks ? activityCalendarLinks.httpsUrl : '',
             calendarEvent: {
               title: `${activity.label} avec Baby's`,
               startIso: chosen.toISOString(),

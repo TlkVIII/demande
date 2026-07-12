@@ -204,6 +204,34 @@ function buildCalendarAttachment(calendarEvent) {
   };
 }
 
+function buildCalendarIcs(calendarEvent) {
+  const attachment = buildCalendarAttachment(calendarEvent);
+  return attachment ? attachment.content : null;
+}
+
+app.get('/calendar.ics', (req, res) => {
+  const raw = req.query.event;
+  if (!raw || typeof raw !== 'string') {
+    return res.status(400).send('Missing event payload');
+  }
+
+  let calendarEvent;
+  try {
+    calendarEvent = JSON.parse(Buffer.from(raw, 'base64url').toString('utf8'));
+  } catch (err) {
+    return res.status(400).send('Invalid event payload');
+  }
+
+  const ics = buildCalendarIcs(calendarEvent);
+  if (!ics) {
+    return res.status(400).send('Invalid event data');
+  }
+
+  res.setHeader('Content-Type', 'text/calendar; charset=utf-8; method=REQUEST');
+  res.setHeader('Content-Disposition', 'attachment; filename="reservation.ics"');
+  res.send(ics);
+});
+
 app.post('/send-email', async (req, res) => {
   const { subject, text, html, calendarEvent } = req.body;
   if (!subject || !text) {
