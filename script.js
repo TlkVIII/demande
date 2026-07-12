@@ -676,7 +676,7 @@ function showActivityConfirm(activity) {
       const emailHtml = `
         <div style="font-family: Arial, sans-serif; color: #4a2d3f; line-height: 1.6;">
           <p>💖 <strong>Ta Baby's a choisi</strong> l'activité suivante : <strong>${activity.label}</strong>.</p>
-          <p>📅 Elle a été réservée pour le <strong>${pretty}</strong>h.</p>
+          <p>📅 Elle a été réservée pour le <strong>${pretty}</strong><strong>h</strong>.</p>
           ${activityMsg ? `<p>📝 <strong>Message :</strong> ${activityMsg.replace(/\n/g, '<br/>')}</p>` : ''}
           <p>✨ J'espère que tu vas lui offrir une très belle expérience et un moment précieux ensemble !</p>
         </div>
