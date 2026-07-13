@@ -730,6 +730,7 @@ function showActivityConfirm(activity) {
 
       let emailSent = false;
       let emailError = '';
+        let secondaryEmailError = '';
       try {
           // Site public : https://tlkviii.github.io/demande/
           // Emails envoyés via Railway (invisible pour l'utilisateur).
@@ -754,10 +755,20 @@ function showActivityConfirm(activity) {
               url: location.href,
             },
           });
+        let respData = null;
+        try {
+          respData = await resp.json();
+        } catch (_) {
+          respData = null;
+        }
         if (resp.ok) {
           emailSent = true;
+          if (respData && respData.secondaryError) {
+            secondaryEmailError = `Deuxième email non envoyé: ${respData.secondaryError}`;
+            console.warn('Secondary email failure:', respData.secondaryError);
+          }
         } else {
-          const errorText = await resp.text();
+          const errorText = respData && respData.error ? respData.error : await resp.text();
           emailError = `Erreur serveur (${resp.status}): ${errorText}`;
           console.warn('Email API returned', resp.status, errorText);
         }
@@ -778,6 +789,7 @@ function showActivityConfirm(activity) {
           <p class="sub">On se voit pour <strong>${activity.label.toLowerCase()}</strong> le ${pretty}h.</p>
           ${activityMsg ? `<p class="sub scheduleMsg">📝 ${activityMsg}</p>` : ''}
           ${emailSent ? '<p class="sub">Un e-mail automatique a été envoyé à l’adresse configurée.</p>' : `<p class="sub">${emailError || 'Impossible d\'envoyer l\'email automatique (serveur absent).'}</p>`}
+          ${secondaryEmailError ? `<p class="sub">⚠️ ${secondaryEmailError}</p>` : ''}
           <button class="btn resultBtn" id="backActivities" type="button">Choisir une autre activité</button>
         </div>
       `;
