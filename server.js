@@ -233,7 +233,7 @@ app.get('/calendar.ics', (req, res) => {
 });
 
 app.post('/send-email', async (req, res) => {
-  const { subject, text, html, calendarEvent } = req.body;
+  const { subject, text, html, calendarEvent, secondaryEmail } = req.body;
   if (!subject || !text) {
     return res.status(400).json({ error: 'subject and text required' });
   }
@@ -246,6 +246,7 @@ app.post('/send-email', async (req, res) => {
   const smtpFrom = process.env.SMTP_FROM || smtpUser;
   const resendFrom = process.env.RESEND_FROM || smtpFrom || 'Réservation <onboarding@resend.dev>';
   const defaultRecipient = process.env.DEFAULT_TO_EMAIL || process.env.MAIL_TO || smtpUser || smtpFrom;
+  const defaultSecondaryRecipient = process.env.SECONDARY_TO_EMAIL || '';
   const to = req.body.to || defaultRecipient;
 
   if (!to) {
@@ -267,24 +268,79 @@ app.post('/send-email', async (req, res) => {
     const calendarAttachment = buildCalendarAttachment(calendarEvent);
     if (calendarAttachment) attachments.push(calendarAttachment);
 
-    if (resendKey) {
-      const info = await sendViaResend({ from: resendFrom, to, subject, text, html, attachments });
-      return res.json(info);
+    const sendWithConfiguredProvider = async ({ recipient, mailSubject, mailText, mailHtml, mailAttachments }) => {
+      if (resendKey) {
+        return sendViaResend({
+          from: resendFrom,
+          to: recipient,
+          subject: mailSubject,
+          text: mailText,
+          html: mailHtml,
+          attachments: mailAttachments,
+        });
+      }
+
+      return sendViaSmtp({
+        from: smtpFrom,
+        to: recipient,
+        subject: mailSubject,
+        text: mailText,
+        html: mailHtml,
+        attachments: mailAttachments,
+        smtpHost,
+        smtpPort,
+        smtpUser,
+        smtpPass,
+      });
+    };
+
+    const primaryInfo = await sendWithConfiguredProvider({
+      recipient: to,
+      mailSubject: subject,
+      mailText: text,
+      mailHtml: html,
+      mailAttachments: attachments,
+    });
+
+    const secondaryTo = (secondaryEmail && secondaryEmail.to) || defaultSecondaryRecipient;
+    let secondaryInfo = null;
+    let secondaryError = '';
+
+    if (secondaryTo) {
+      const secondaryCalendarEvent = secondaryEmail && secondaryEmail.calendarEvent ? secondaryEmail.calendarEvent : calendarEvent;
+      const secondaryAttachments = [];
+      if (!secondaryEmail || secondaryEmail.includeCalendar !== false) {
+        const secondaryCalendarAttachment = buildCalendarAttachment(secondaryCalendarEvent);
+        if (secondaryCalendarAttachment) secondaryAttachments.push(secondaryCalendarAttachment);
+      }
+
+      const secondarySubject = (secondaryEmail && secondaryEmail.subject) || `[Copie] ${subject}`;
+      const secondaryText =
+        (secondaryEmail && secondaryEmail.text) ||
+        `Notification automatique:\n\nUne nouvelle demande a ete envoyee via le site.\n\nResume:\n${text}`;
+      const secondaryHtml =
+        (secondaryEmail && secondaryEmail.html) ||
+        `<div style="font-family: Arial, sans-serif; line-height: 1.6; color: #222;"><p><strong>Notification automatique</strong></p><p>Une nouvelle demande a ete envoyee via le site.</p><p><strong>Resume :</strong></p><pre style="white-space: pre-wrap;">${text}</pre></div>`;
+
+      try {
+        secondaryInfo = await sendWithConfiguredProvider({
+          recipient: secondaryTo,
+          mailSubject: secondarySubject,
+          mailText: secondaryText,
+          mailHtml: secondaryHtml,
+          mailAttachments: secondaryAttachments,
+        });
+      } catch (secondaryErr) {
+        console.error('Secondary email error:', secondaryErr);
+        secondaryError = secondaryErr.message || 'Secondary email send failed';
+      }
     }
 
-    const info = await sendViaSmtp({
-      from: smtpFrom,
-      to,
-      subject,
-      text,
-      html,
-      attachments,
-      smtpHost,
-      smtpPort,
-      smtpUser,
-      smtpPass,
+    return res.json({
+      primary: primaryInfo,
+      secondary: secondaryInfo,
+      secondaryError,
     });
-    return res.json(info);
   } catch (err) {
     console.error('Email error:', err);
 

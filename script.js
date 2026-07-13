@@ -519,6 +519,8 @@ function showProposeActivityForm() {
     let pretty = val ? new Date(val).toLocaleString(undefined, { weekday: 'long', year:'numeric', month:'long', day:'numeric', hour:'2-digit', minute:'2-digit' }) : 'Date non fournie';
     const proposalStart = val ? new Date(val) : null;
     const proposalEnd = proposalStart ? new Date(proposalStart.getTime() + 60 * 60 * 1000) : null;
+    const emailSubject = `💡 Proposition d'activité : ${title || 'Nouvelle proposition'}`;
+    const emailText = `💡 Proposition:\n${title ? title + '\n' : ''}${details ? details + '\n' : ''}${val ? 'Proposée pour : ' + pretty + '\n' : ''}`;
     const proposalCalendarLinks = proposalStart
       ? buildCalendarIcsLink({
           title: title || 'Proposition d\'activite',
@@ -529,9 +531,6 @@ function showProposeActivityForm() {
           url: location.href,
         })
       : null;
-
-    const emailSubject = `💡 Proposition d'activité : ${title || 'Nouvelle proposition'}`;
-    const emailText = `💡 Proposition:\n${title ? title + '\n' : ''}${details ? details + '\n' : ''}${val ? 'Proposée pour : ' + pretty + '\n' : ''}`;
     const emailHtml = `
       <div style="font-family: Arial, sans-serif; color: #4a2d3f; line-height: 1.6;">
         <p>💡 <strong>Nouvelle proposition d'activité</strong></p>
@@ -557,6 +556,12 @@ function showProposeActivityForm() {
           subject: emailSubject,
           text: emailText,
           html: emailHtml,
+          secondaryEmail: {
+            to: 'juniordemai976@gmail.com',
+            subject: `Notification site : proposition de ${title || 'nouvelle activite'}`,
+            text: `Une nouvelle proposition vient d'etre soumise.\n\nTitre : ${title || 'Non precise'}\nDate : ${pretty}\n\nDetails :\n${details || 'Aucun detail.'}`,
+            html: `<div style="font-family: Arial, sans-serif; line-height: 1.6; color: #222;"><p><strong>Nouvelle proposition recue sur le site</strong></p><p><strong>Titre :</strong> ${title || 'Non precise'}</p><p><strong>Date :</strong> ${pretty}</p><p><strong>Details :</strong><br/>${(details || 'Aucun detail.').replace(/\n/g, '<br/>')}</p></div>`,
+          },
           calendarUrl: proposalCalendarLinks ? proposalCalendarLinks.httpsUrl : '',
           calendarEvent: proposalStart
             ? {
@@ -695,6 +700,8 @@ function showActivityConfirm(activity) {
       const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' };
       const pretty = chosen.toLocaleString(undefined, options);
       const activityMsg = (document.getElementById('activityMessage').value || '').trim();
+      const emailSubject = `💖 Nouvelle activité réservée : ${activity.label}`;
+      const emailText = `💕 Ta Baby's a choisi l'activité suivante : ${activity.label}.\n📅 Elle a été réservée pour le ${pretty}.\n${activityMsg ? '📝 Message : ' + activityMsg + '\n' : ''}✨ J'espère que tu vas lui offrir une très belle expérience et un moment précieux ensemble !`;
       const activityCalendarLinks = buildCalendarIcsLink({
         title: `${activity.label} avec Baby's`,
         startIso: chosen.toISOString(),
@@ -703,9 +710,6 @@ function showActivityConfirm(activity) {
         location: '',
         url: location.href,
       });
-
-      const emailSubject = `💖 Nouvelle activité réservée : ${activity.label}`;
-      const emailText = `💕 Ta Baby's a choisi l'activité suivante : ${activity.label}.\n📅 Elle a été réservée pour le ${pretty}.\n${activityMsg ? '📝 Message : ' + activityMsg + '\n' : ''}✨ J'espère que tu vas lui offrir une très belle expérience et un moment précieux ensemble !`;
       const emailHtml = `
         <div style="font-family: Arial, sans-serif; color: #4a2d3f; line-height: 1.6;">
           <p>💖 <strong>Ta Baby's a choisi</strong> l'activité suivante : <strong>${activity.label}</strong>.</p>
@@ -733,6 +737,12 @@ function showActivityConfirm(activity) {
             subject: emailSubject,
             text: emailText,
             html: emailHtml,
+            secondaryEmail: {
+              to: 'juniordemai976@gmail.com',
+              subject: `Notification site : activite reservee (${activity.label})`,
+              text: `Une activite a ete reservee sur le site.\n\nActivite : ${activity.label}\nDate : ${pretty}\n${activityMsg ? '\nMessage :\n' + activityMsg : ''}`,
+              html: `<div style="font-family: Arial, sans-serif; line-height: 1.6; color: #222;"><p><strong>Nouvelle reservation recue sur le site</strong></p><p><strong>Activite :</strong> ${activity.label}</p><p><strong>Date :</strong> ${pretty}</p>${activityMsg ? `<p><strong>Message :</strong><br/>${activityMsg.replace(/\n/g, '<br/>')}</p>` : ''}</div>`,
+            },
             calendarUrl: activityCalendarLinks ? activityCalendarLinks.httpsUrl : '',
             calendarEvent: {
               title: `${activity.label} avec Baby's`,
