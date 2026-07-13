@@ -315,7 +315,8 @@ app.post('/send-email', async (req, res) => {
       'Primary email'
     );
 
-    const secondaryTo = (secondaryEmail && secondaryEmail.to) || defaultSecondaryRecipient;
+    const secondaryToRaw = (secondaryEmail && secondaryEmail.to) || defaultSecondaryRecipient;
+    const secondaryTo = typeof secondaryToRaw === 'string' ? secondaryToRaw.trim() : '';
     let secondaryInfo = null;
     let secondaryError = '';
 
@@ -344,12 +345,33 @@ app.post('/send-email', async (req, res) => {
             mailHtml: secondaryHtml,
             mailAttachments: secondaryAttachments,
           }),
-          8000,
+          15000,
           'Secondary email'
         );
       } catch (secondaryErr) {
         console.error('Secondary email error:', secondaryErr);
-        secondaryError = secondaryErr.message || 'Secondary email send failed';
+        // Retry once without attachments (some providers reject/slow down calendar invites).
+        if (secondaryAttachments.length) {
+          try {
+            secondaryInfo = await withTimeout(
+              sendWithConfiguredProvider({
+                recipient: secondaryTo,
+                mailSubject: secondarySubject,
+                mailText: secondaryText,
+                mailHtml: secondaryHtml,
+                mailAttachments: [],
+              }),
+              10000,
+              'Secondary email retry'
+            );
+            secondaryError = '';
+          } catch (retryErr) {
+            console.error('Secondary email retry error:', retryErr);
+            secondaryError = retryErr.message || secondaryErr.message || 'Secondary email send failed';
+          }
+        } else {
+          secondaryError = secondaryErr.message || 'Secondary email send failed';
+        }
       }
     }
 
