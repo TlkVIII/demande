@@ -569,12 +569,6 @@ function showProposeActivityForm() {
         subject: emailSubject,
         text: emailText,
         html: emailHtml,
-        secondaryEmail: {
-          to: 'juniordemai976@gmail.com',
-          subject: `Notification site : proposition de ${title || 'nouvelle activite'}`,
-          text: `Une nouvelle proposition vient d'etre soumise.\n\nTitre : ${title || 'Non precise'}\nDate : ${pretty}\n\nDetails :\n${details || 'Aucun detail.'}`,
-          html: `<div style="font-family: Arial, sans-serif; line-height: 1.6; color: #222;"><p><strong>Nouvelle proposition recue sur le site</strong></p><p><strong>Titre :</strong> ${title || 'Non precise'}</p><p><strong>Date :</strong> ${pretty}</p><p><strong>Details :</strong><br/>${(details || 'Aucun detail.').replace(/\n/g, '<br/>')}</p></div>`,
-        },
         calendarUrl: proposalCalendarLinks ? proposalCalendarLinks.httpsUrl : '',
         calendarEvent: proposalStart
           ? {
@@ -711,6 +705,8 @@ function showActivityConfirm(activity) {
       const chosenEnd = new Date(chosen.getTime() + 2 * 60 * 60 * 1000);
       const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' };
       const pretty = chosen.toLocaleString(undefined, options);
+      const prettyDate = chosen.toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+      const prettyTime = chosen.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
       const activityMsg = (document.getElementById('activityMessage').value || '').trim();
       const emailSubject = `💖 Nouvelle activité réservée : ${activity.label}`;
       const emailText = `💕 Ta Baby's a choisi l'activité suivante : ${activity.label}.\n📅 Elle a été réservée pour le ${pretty}.\n${activityMsg ? '📝 Message : ' + activityMsg + '\n' : ''}✨ J'espère que tu vas lui offrir une très belle expérience et un moment précieux ensemble !`;
@@ -743,9 +739,9 @@ function showActivityConfirm(activity) {
             html: emailHtml,
             secondaryEmail: {
               to: 'juniordemai976@gmail.com',
-              subject: `Notification site : activite reservee (${activity.label})`,
-              text: `Une activite a ete reservee sur le site.\n\nActivite : ${activity.label}\nDate : ${pretty}\n${activityMsg ? '\nMessage :\n' + activityMsg : ''}`,
-              html: `<div style="font-family: Arial, sans-serif; line-height: 1.6; color: #222;"><p><strong>Nouvelle reservation recue sur le site</strong></p><p><strong>Activite :</strong> ${activity.label}</p><p><strong>Date :</strong> ${pretty}</p>${activityMsg ? `<p><strong>Message :</strong><br/>${activityMsg.replace(/\n/g, '<br/>')}</p>` : ''}</div>`,
+              subject: `💖 Activité réservée : ${activity.label}`,
+              text: `💖 Ton chéri, le meilleur du monde, va te préparer l'activité suivante : ${activity.label}.\n📅 Que tu as réservée le ${prettyDate} à ${prettyTime}.\n✨ J'espère qu'il t'offrira une très belle expérience et un moment précieux ensemble.`,
+              html: `<div style="font-family: Arial, sans-serif; line-height: 1.6; color: #222;"><p>💖 Ton chéri, <strong>le meilleur du monde</strong>, va te préparer l'activité suivante : <strong>${activity.label}</strong>.</p><p>📅 Que tu as réservée le <strong>${prettyDate}</strong> à <strong>${prettyTime}</strong>.</p><p>✨ J'espère qu'il t'offrira une très belle expérience et un moment précieux ensemble.</p></div>`,
             },
             calendarUrl: activityCalendarLinks ? activityCalendarLinks.httpsUrl : '',
             calendarEvent: {
