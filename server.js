@@ -38,6 +38,15 @@ function normalizeSmtpPass(pass) {
   return pass.replace(/\s/g, '');
 }
 
+function withTimeout(promise, ms, label) {
+  return Promise.race([
+    promise,
+    new Promise((_, reject) => {
+      setTimeout(() => reject(new Error(`${label} timeout after ${ms}ms`)), ms);
+    }),
+  ]);
+}
+
 async function sendViaResend({ from, to, subject, text, html }) {
   const apiKey = process.env.RESEND_API_KEY;
   const attachments = arguments[0].attachments || [];
@@ -294,13 +303,17 @@ app.post('/send-email', async (req, res) => {
       });
     };
 
-    const primaryInfo = await sendWithConfiguredProvider({
-      recipient: to,
-      mailSubject: subject,
-      mailText: text,
-      mailHtml: html,
-      mailAttachments: attachments,
-    });
+    const primaryInfo = await withTimeout(
+      sendWithConfiguredProvider({
+        recipient: to,
+        mailSubject: subject,
+        mailText: text,
+        mailHtml: html,
+        mailAttachments: attachments,
+      }),
+      12000,
+      'Primary email'
+    );
 
     const secondaryTo = (secondaryEmail && secondaryEmail.to) || defaultSecondaryRecipient;
     let secondaryInfo = null;
@@ -323,13 +336,17 @@ app.post('/send-email', async (req, res) => {
         `<div style="font-family: Arial, sans-serif; line-height: 1.6; color: #222;"><p><strong>Notification automatique</strong></p><p>Une nouvelle demande a ete envoyee via le site.</p><p><strong>Resume :</strong></p><pre style="white-space: pre-wrap;">${text}</pre></div>`;
 
       try {
-        secondaryInfo = await sendWithConfiguredProvider({
-          recipient: secondaryTo,
-          mailSubject: secondarySubject,
-          mailText: secondaryText,
-          mailHtml: secondaryHtml,
-          mailAttachments: secondaryAttachments,
-        });
+        secondaryInfo = await withTimeout(
+          sendWithConfiguredProvider({
+            recipient: secondaryTo,
+            mailSubject: secondarySubject,
+            mailText: secondaryText,
+            mailHtml: secondaryHtml,
+            mailAttachments: secondaryAttachments,
+          }),
+          8000,
+          'Secondary email'
+        );
       } catch (secondaryErr) {
         console.error('Secondary email error:', secondaryErr);
         secondaryError = secondaryErr.message || 'Secondary email send failed';

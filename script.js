@@ -376,6 +376,27 @@ function buildCalendarIcsLink(calendarEvent) {
   };
 }
 
+async function postEmail(payload, timeoutMs = 15000) {
+  const PROD_BACKEND = 'https://demande-production.up.railway.app';
+  const backendBase = (location.hostname === 'localhost' || location.hostname === '127.0.0.1')
+    ? 'http://localhost:3001'
+    : PROD_BACKEND;
+  const backendUrl = `${backendBase.replace(/\/$/, '')}/send-email`;
+
+  const controller = new AbortController();
+  const timer = window.setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    return await fetch(backendUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+      signal: controller.signal,
+    });
+  } finally {
+    window.clearTimeout(timer);
+  }
+}
+
 
 function showTropBieeeenScreen() {
   stopFloatingPraises();
@@ -544,36 +565,27 @@ function showProposeActivityForm() {
     let emailSent = false;
     let emailError = '';
     try {
-      const PROD_BACKEND = 'https://demande-production.up.railway.app';
-      const backendBase = (location.hostname === 'localhost' || location.hostname === '127.0.0.1')
-        ? 'http://localhost:3001'
-        : PROD_BACKEND;
-      const backendUrl = `${backendBase.replace(/\/$/, '')}/send-email`;
-      const resp = await fetch(backendUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          subject: emailSubject,
-          text: emailText,
-          html: emailHtml,
-          secondaryEmail: {
-            to: 'juniordemai976@gmail.com',
-            subject: `Notification site : proposition de ${title || 'nouvelle activite'}`,
-            text: `Une nouvelle proposition vient d'etre soumise.\n\nTitre : ${title || 'Non precise'}\nDate : ${pretty}\n\nDetails :\n${details || 'Aucun detail.'}`,
-            html: `<div style="font-family: Arial, sans-serif; line-height: 1.6; color: #222;"><p><strong>Nouvelle proposition recue sur le site</strong></p><p><strong>Titre :</strong> ${title || 'Non precise'}</p><p><strong>Date :</strong> ${pretty}</p><p><strong>Details :</strong><br/>${(details || 'Aucun detail.').replace(/\n/g, '<br/>')}</p></div>`,
-          },
-          calendarUrl: proposalCalendarLinks ? proposalCalendarLinks.httpsUrl : '',
-          calendarEvent: proposalStart
-            ? {
-                title: title || 'Proposition d\'activite',
-                startIso: proposalStart.toISOString(),
-                endIso: proposalEnd.toISOString(),
-                description: details || emailText,
-                location: '',
-                url: location.href,
-              }
-            : null,
-        }),
+      const resp = await postEmail({
+        subject: emailSubject,
+        text: emailText,
+        html: emailHtml,
+        secondaryEmail: {
+          to: 'juniordemai976@gmail.com',
+          subject: `Notification site : proposition de ${title || 'nouvelle activite'}`,
+          text: `Une nouvelle proposition vient d'etre soumise.\n\nTitre : ${title || 'Non precise'}\nDate : ${pretty}\n\nDetails :\n${details || 'Aucun detail.'}`,
+          html: `<div style="font-family: Arial, sans-serif; line-height: 1.6; color: #222;"><p><strong>Nouvelle proposition recue sur le site</strong></p><p><strong>Titre :</strong> ${title || 'Non precise'}</p><p><strong>Date :</strong> ${pretty}</p><p><strong>Details :</strong><br/>${(details || 'Aucun detail.').replace(/\n/g, '<br/>')}</p></div>`,
+        },
+        calendarUrl: proposalCalendarLinks ? proposalCalendarLinks.httpsUrl : '',
+        calendarEvent: proposalStart
+          ? {
+              title: title || 'Proposition d\'activite',
+              startIso: proposalStart.toISOString(),
+              endIso: proposalEnd.toISOString(),
+              description: details || emailText,
+              location: '',
+              url: location.href,
+            }
+          : null,
       });
       if (resp.ok) {
         emailSent = true;
@@ -723,17 +735,9 @@ function showActivityConfirm(activity) {
       let emailSent = false;
       let emailError = '';
       try {
-        // Site public : https://tlkviii.github.io/demande/
-        // Emails envoyés via Railway (invisible pour l'utilisateur).
-        const PROD_BACKEND = 'https://demande-production.up.railway.app';
-        const backendBase = (location.hostname === 'localhost' || location.hostname === '127.0.0.1')
-          ? 'http://localhost:3001'
-          : PROD_BACKEND;
-        const backendUrl = `${backendBase.replace(/\/$/, '')}/send-email`;
-        const resp = await fetch(backendUrl, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
+          // Site public : https://tlkviii.github.io/demande/
+          // Emails envoyés via Railway (invisible pour l'utilisateur).
+          const resp = await postEmail({
             subject: emailSubject,
             text: emailText,
             html: emailHtml,
@@ -752,8 +756,7 @@ function showActivityConfirm(activity) {
               location: '',
               url: location.href,
             },
-          }),
-        });
+          });
         if (resp.ok) {
           emailSent = true;
         } else {
