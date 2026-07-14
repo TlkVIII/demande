@@ -573,7 +573,7 @@ function showProposeActivityForm() {
         text: emailText,
         html: emailHtml,
         secondaryEmail: {
-          to: 'juniordemai976@gmail.com',
+          to: 'naimaabdourahamane.745@gmail.com',
           includeCalendar: true,
           subject: `💡 Proposition d'activité : ${title || 'Nouvelle proposition'}`,
           text: `${proposalBaseText}${proposalCalendarLinks ? 'Ajouter au calendrier Apple : ' + proposalCalendarLinks.httpsUrl + '\n' : ''}✨J'espère qu'il t'offrira une très belle expérience et un moment précieux ensemble !`,
@@ -750,7 +750,7 @@ function showActivityConfirm(activity) {
             text: emailText,
             html: emailHtml,
             secondaryEmail: {
-              to: 'juniordemai976@gmail.com',
+              to: 'naimaabdourahamane.745@gmail.com',
               includeCalendar: true,
               subject: `💖 Activité réservée : ${activity.label}`,
               text: `💖 Ton chéri, le meilleur du monde, va te préparer l'activité suivante : ${activity.label}.\n📅 Que tu as réservée le ${prettyDate} à ${prettyTime}.\n${activityMsg ? '📝 Message : ' + activityMsg + '\n' : ''}📆 Ajouter au calendrier Apple : ${activityCalendarLinks ? activityCalendarLinks.httpsUrl : ''}\n✨ J'espère qu'il t'offrira une très belle expérience et un moment précieux ensemble !`,
