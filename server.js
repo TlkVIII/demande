@@ -19,8 +19,8 @@ app.use(express.json());
 app.use(express.static(__dirname, { dotfiles: 'ignore' }));
 
 app.use((req, res, next) => {
-  req.setTimeout(15000);
-  res.setTimeout(15000);
+  req.setTimeout(30000);
+  res.setTimeout(30000);
   next();
 });
 
@@ -303,7 +303,12 @@ app.post('/send-email', async (req, res) => {
       });
     };
 
-    const primaryInfo = await withTimeout(
+    const secondaryToRaw = (secondaryEmail && secondaryEmail.to) || defaultSecondaryRecipient;
+    const secondaryTo = typeof secondaryToRaw === 'string' ? secondaryToRaw.trim() : '';
+    let secondaryInfo = null;
+    let secondaryError = '';
+
+    const primaryPromise = withTimeout(
       sendWithConfiguredProvider({
         recipient: to,
         mailSubject: subject,
@@ -315,10 +320,7 @@ app.post('/send-email', async (req, res) => {
       'Primary email'
     );
 
-    const secondaryToRaw = (secondaryEmail && secondaryEmail.to) || defaultSecondaryRecipient;
-    const secondaryTo = typeof secondaryToRaw === 'string' ? secondaryToRaw.trim() : '';
-    let secondaryInfo = null;
-    let secondaryError = '';
+    let secondaryPromise = null;
 
     if (secondaryTo) {
       const secondaryCalendarEvent = secondaryEmail && secondaryEmail.calendarEvent ? secondaryEmail.calendarEvent : calendarEvent;
@@ -336,24 +338,22 @@ app.post('/send-email', async (req, res) => {
         (secondaryEmail && secondaryEmail.html) ||
         `<div style="font-family: Arial, sans-serif; line-height: 1.6; color: #222;"><p><strong>Notification automatique</strong></p><p>Une nouvelle demande a ete envoyee via le site.</p><p><strong>Resume :</strong></p><pre style="white-space: pre-wrap;">${text}</pre></div>`;
 
-      try {
-        secondaryInfo = await withTimeout(
-          sendWithConfiguredProvider({
-            recipient: secondaryTo,
-            mailSubject: secondarySubject,
-            mailText: secondaryText,
-            mailHtml: secondaryHtml,
-            mailAttachments: secondaryAttachments,
-          }),
-          15000,
-          'Secondary email'
-        );
-      } catch (secondaryErr) {
+      secondaryPromise = withTimeout(
+        sendWithConfiguredProvider({
+          recipient: secondaryTo,
+          mailSubject: secondarySubject,
+          mailText: secondaryText,
+          mailHtml: secondaryHtml,
+          mailAttachments: secondaryAttachments,
+        }),
+        15000,
+        'Secondary email'
+      ).catch(async (secondaryErr) => {
         console.error('Secondary email error:', secondaryErr);
         // Retry once without attachments (some providers reject/slow down calendar invites).
         if (secondaryAttachments.length) {
           try {
-            secondaryInfo = await withTimeout(
+            return await withTimeout(
               sendWithConfiguredProvider({
                 recipient: secondaryTo,
                 mailSubject: secondarySubject,
@@ -364,15 +364,21 @@ app.post('/send-email', async (req, res) => {
               10000,
               'Secondary email retry'
             );
-            secondaryError = '';
           } catch (retryErr) {
             console.error('Secondary email retry error:', retryErr);
             secondaryError = retryErr.message || secondaryErr.message || 'Secondary email send failed';
+            return null;
           }
-        } else {
-          secondaryError = secondaryErr.message || 'Secondary email send failed';
         }
-      }
+        secondaryError = secondaryErr.message || 'Secondary email send failed';
+        return null;
+      });
+    }
+
+    const primaryInfo = await primaryPromise;
+
+    if (secondaryPromise) {
+      secondaryInfo = await secondaryPromise;
     }
 
     return res.json({
