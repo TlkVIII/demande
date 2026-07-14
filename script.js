@@ -552,14 +552,14 @@ function showProposeActivityForm() {
           url: location.href,
         })
       : null;
-    const emailText = `${proposalBaseText}${proposalCalendarLinks ? 'Ajouter au calendrier : ' + proposalCalendarLinks.webcalUrl + '\nOuvrir le fichier calendrier : ' + proposalCalendarLinks.httpsUrl + '\n' : ''}`;
+    const emailText = `${proposalBaseText}${proposalCalendarLinks ? 'Ajouter au calendrier : ' + proposalCalendarLinks.httpsUrl + '\nOuvrir le fichier calendrier : ' + proposalCalendarLinks.httpsUrl + '\n' : ''}`;
     const emailHtml = `
       <div style="font-family: Arial, sans-serif; color: #4a2d3f; line-height: 1.6;">
         <p>💡 <strong>Nouvelle proposition d'activité</strong></p>
         ${title ? `<p><strong>Titre:</strong> ${title}</p>` : ''}
         ${details ? `<p><strong>Détails:</strong> ${details.replace(/\n/g,'<br/>')}</p>` : ''}
         ${val ? `<p><strong>Date proposée:</strong> ${pretty}</p>` : '<p><em>Aucune date proposée</em></p>'}
-        ${proposalCalendarLinks ? `<p><a href="${proposalCalendarLinks.webcalUrl}">Ajouter au calendrier</a> | <a href="${proposalCalendarLinks.httpsUrl}">Ouvrir le fichier calendrier</a></p>` : ''}
+        ${proposalCalendarLinks ? `<p><a href="${proposalCalendarLinks.httpsUrl}">Ajouter au calendrier</a> | <a href="${proposalCalendarLinks.httpsUrl}">Ouvrir le fichier calendrier</a></p>` : ''}
       </div>
     `;
 
@@ -719,13 +719,13 @@ function showActivityConfirm(activity) {
         location: '',
         url: location.href,
       });
-      const emailText = `${activityBaseText}${activityCalendarLinks ? '📆 Ajouter au calendrier : ' + activityCalendarLinks.webcalUrl + '\n📎 Ouvrir le fichier calendrier : ' + activityCalendarLinks.httpsUrl + '\n' : ''}✨ J'espère que tu vas lui offrir une très belle expérience et un moment précieux ensemble !`;
+      const emailText = `${activityBaseText}${activityCalendarLinks ? '📆 Ajouter au calendrier : ' + activityCalendarLinks.httpsUrl + '\n📎 Ouvrir le fichier calendrier : ' + activityCalendarLinks.httpsUrl + '\n' : ''}✨ J'espère que tu vas lui offrir une très belle expérience et un moment précieux ensemble !`;
       const emailHtml = `
         <div style="font-family: Arial, sans-serif; color: #4a2d3f; line-height: 1.6;">
           <p>💖 <strong>Ta Baby's a choisi</strong> l'activité suivante : <strong>${activity.label}</strong>.</p>
-          <p>📅 Elle a été réservée pour le <strong>${pretty}</strong>.</p>
+          <p>📅 Elle a été réservée pour le <strong>${pretty}</strong><strong>h</strong>.</p>
           ${activityMsg ? `<p>📝 <strong>Message :</strong> ${activityMsg.replace(/\n/g, '<br/>')}</p>` : ''}
-          ${activityCalendarLinks ? `<p><a href="${activityCalendarLinks.webcalUrl}">Ajouter au calendrier</a> | <a href="${activityCalendarLinks.httpsUrl}">Ouvrir le fichier calendrier</a></p>` : ''}
+          ${activityCalendarLinks ? `<p><a href="${activityCalendarLinks.httpsUrl}">Ajouter au calendrier</a> | <a href="${activityCalendarLinks.httpsUrl}">Ouvrir le fichier calendrier</a></p>` : ''}
           <p>✨ J'espère que tu vas lui offrir une très belle expérience et un moment précieux ensemble !</p>
         </div>
       `;
@@ -744,8 +744,8 @@ function showActivityConfirm(activity) {
               to: 'juniordemai976@gmail.com',
               includeCalendar: true,
               subject: `💖 Activité réservée : ${activity.label}`,
-              text: `💖 Ton chéri, le meilleur du monde, va te préparer l'activité suivante : ${activity.label}.\n📅 Que tu as réservée le ${prettyDate} à ${prettyTime}.\n📆 Ajouter au calendrier: ${activityCalendarLinks ? activityCalendarLinks.webcalUrl : ''}\n📎 Ouvrir le fichier calendrier: ${activityCalendarLinks ? activityCalendarLinks.httpsUrl : ''}\n✨ J'espère qu'il t'offrira une très belle expérience et un moment précieux ensemble !`,
-              html: `<div style="font-family: Arial, sans-serif; line-height: 1.6; color: #222;"><p>💖 Ton chéri, <strong>le meilleur du monde</strong>, va te préparer l'activité suivante : <strong>${activity.label}</strong>.</p><p>📅 Que tu as réservée le <strong>${prettyDate}</strong> à <strong>${prettyTime}</strong>.</p>${activityCalendarLinks ? `<p><a href="${activityCalendarLinks.webcalUrl}">Ajouter au calendrier</a> | <a href="${activityCalendarLinks.httpsUrl}">Ouvrir le fichier calendrier</a></p>` : ''}<p>✨ J'espère qu'il t'offrira une très belle expérience et un moment précieux ensemble.</p></div>`,
+              text: `💖 Ton chéri, le meilleur du monde, va te préparer l'activité suivante : ${activity.label}.\n📅 Que tu as réservée le ${prettyDate} à ${prettyTime}<strong>h</strong>.\n📆 Ajouter au calendrier: ${activityCalendarLinks ? activityCalendarLinks.httpsUrl : ''}\n📎 Ouvrir le fichier calendrier: ${activityCalendarLinks ? activityCalendarLinks.httpsUrl : ''}\n✨ J'espère qu'il t'offrira une très belle expérience et un moment précieux ensemble !`,
+              html: `<div style="font-family: Arial, sans-serif; line-height: 1.6; color: #222;"><p>💖 Ton chéri, <strong>le meilleur du monde</strong>, va te préparer l'activité suivante : <strong>${activity.label}</strong>.</p><p>📅 Que tu as réservée le <strong>${prettyDate}</strong> à <strong>${prettyTime}</strong>.</p>${activityCalendarLinks ? `<p><a href="${activityCalendarLinks.httpsUrl}">Ajouter au calendrier</a> | <a href="${activityCalendarLinks.httpsUrl}">Ouvrir le fichier calendrier</a></p>` : ''}<p>✨ J'espère qu'il t'offrira une très belle expérience et un moment précieux ensemble.</p></div>`,
             },
             calendarUrl: activityCalendarLinks ? activityCalendarLinks.httpsUrl : '',
             calendarEvent: {
