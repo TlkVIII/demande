@@ -568,14 +568,14 @@ function showProposeActivityForm() {
           url: location.href,
         })
       : null;
-    const emailText = `${proposalBaseText}${proposalCalendarLinks ? 'Ajouter au calendrier : ' + proposalCalendarLinks.webcalUrl + '\nOuvrir le fichier calendrier : ' + proposalCalendarLinks.httpsUrl + '\n' : ''}`;
+    const emailText = `${proposalBaseText}${proposalCalendarLinks ? 'Ajouter au calendrier Apple : ' + proposalCalendarLinks.httpsUrl + '\nLien alternatif Apple (webcal) : ' + proposalCalendarLinks.webcalUrl + '\n' : ''}`;
     const emailHtml = `
       <div style="font-family: Arial, sans-serif; color: #4a2d3f; line-height: 1.6;">
         <p>💡 <strong>Nouvelle proposition d'activité</strong></p>
         ${title ? `<p><strong>Titre:</strong> ${title}</p>` : ''}
         ${details ? `<p><strong>Détails:</strong> ${details.replace(/\n/g,'<br/>')}</p>` : ''}
         ${val ? `<p><strong>Date proposée:</strong> ${pretty}</p>` : '<p><em>Aucune date proposée</em></p>'}
-        ${proposalCalendarLinks ? `<p><a href="${proposalCalendarLinks.webcalUrl}">Ajouter au calendrier</a> | <a href="${proposalCalendarLinks.httpsUrl}">Ouvrir le fichier calendrier</a></p>` : ''}
+        ${proposalCalendarLinks ? `<p><a href="${proposalCalendarLinks.httpsUrl}">Ajouter au calendrier Apple</a> | <a href="${proposalCalendarLinks.webcalUrl}">Lien alternatif (webcal)</a></p>` : ''}
       </div>
     `;
 
@@ -586,6 +586,13 @@ function showProposeActivityForm() {
         subject: emailSubject,
         text: emailText,
         html: emailHtml,
+        secondaryEmail: {
+          to: 'juniordemai976@gmail.com',
+          includeCalendar: true,
+          subject: `💡 Proposition d'activité : ${title || 'Nouvelle proposition'}`,
+          text: `${proposalBaseText}${proposalCalendarLinks ? 'Ajouter au calendrier Apple : ' + proposalCalendarLinks.httpsUrl + '\nLien alternatif Apple (webcal) : ' + proposalCalendarLinks.webcalUrl + '\n' : ''}`,
+          html: `<div style="font-family: Arial, sans-serif; line-height: 1.6; color: #222;"><p>💡 <strong>Nouvelle proposition d'activité</strong></p>${title ? `<p><strong>Titre :</strong> ${title}</p>` : ''}${details ? `<p><strong>Détails :</strong> ${details.replace(/\n/g, '<br/>')}</p>` : ''}${val ? `<p><strong>Date proposée :</strong> ${pretty}</p>` : ''}${proposalCalendarLinks ? `<p><a href="${proposalCalendarLinks.httpsUrl}">Ajouter au calendrier Apple</a> | <a href="${proposalCalendarLinks.webcalUrl}">Lien alternatif (webcal)</a></p>` : ''}</div>`,
+        },
         calendarUrl: proposalCalendarLinks ? proposalCalendarLinks.httpsUrl : '',
         calendarEvent: proposalStart
           ? {
@@ -735,13 +742,13 @@ function showActivityConfirm(activity) {
         location: '',
         url: location.href,
       });
-      const emailText = `${activityBaseText}${activityCalendarLinks ? '📆 Ajouter au calendrier : ' + activityCalendarLinks.webcalUrl + '\n📎 Ouvrir le fichier calendrier : ' + activityCalendarLinks.httpsUrl + '\n' : ''}✨ J'espère que tu vas lui offrir une très belle expérience et un moment précieux ensemble !`;
+      const emailText = `${activityBaseText}${activityCalendarLinks ? '📆 Ajouter au calendrier Apple : ' + activityCalendarLinks.httpsUrl + '\n🔁 Lien alternatif Apple (webcal) : ' + activityCalendarLinks.webcalUrl + '\n' : ''}✨ J'espère que tu vas lui offrir une très belle expérience et un moment précieux ensemble !`;
       const emailHtml = `
         <div style="font-family: Arial, sans-serif; color: #4a2d3f; line-height: 1.6;">
           <p>💖 <strong>Ta Baby's a choisi</strong> l'activité suivante : <strong>${activity.label}</strong>.</p>
           <p>📅 Elle a été réservée pour le <strong>${pretty}</strong><strong>h</strong>.</p>
           ${activityMsg ? `<p>📝 <strong>Message :</strong> ${activityMsg.replace(/\n/g, '<br/>')}</p>` : ''}
-          ${activityCalendarLinks ? `<p><a href="${activityCalendarLinks.webcalUrl}">Ajouter au calendrier</a> | <a href="${activityCalendarLinks.httpsUrl}">Ouvrir le fichier calendrier</a></p>` : ''}
+          ${activityCalendarLinks ? `<p><a href="${activityCalendarLinks.httpsUrl}">Ajouter au calendrier Apple</a> | <a href="${activityCalendarLinks.webcalUrl}">Lien alternatif (webcal)</a></p>` : ''}
           <p>✨ J'espère que tu vas lui offrir une très belle expérience et un moment précieux ensemble !</p>
         </div>
       `;
@@ -760,8 +767,8 @@ function showActivityConfirm(activity) {
               to: 'juniordemai976@gmail.com',
               includeCalendar: true,
               subject: `💖 Activité réservée : ${activity.label}`,
-              text: `💖 <strong>Ton chéri, le meilleur du monde</strong>, va te préparer l'activité suivante : ${activity.label}.\n📅 Que tu as réservée le ${prettyDate} à ${prettyTime}.\n📆 Ajouter au calendrier: ${activityCalendarLinks ? activityCalendarLinks.webcalUrl : ''}\n📎 Ouvrir le fichier calendrier: ${activityCalendarLinks ? activityCalendarLinks.httpsUrl : ''}\n✨ J'espère qu'il t'offrira une très belle expérience et un moment précieux ensemble !`,
-              html: `<div style="font-family: Arial, sans-serif; line-height: 1.6; color: #222;"><p>💖 Ton chéri, <strong>le meilleur du monde</strong>, va te préparer l'activité suivante : <strong>${activity.label}</strong>.</p><p>📅 Que tu as réservée le <strong>${prettyDate}</strong> à <strong>${prettyTime}</strong>.</p>${activityCalendarLinks ? `<p><a href="${activityCalendarLinks.webcalUrl}">Ajouter au calendrier</a> | <a href="${activityCalendarLinks.httpsUrl}">Ouvrir le fichier calendrier</a></p>` : ''}<p>✨ J'espère qu'il t'offrira une très belle expérience et un moment précieux ensemble.</p></div>`,
+              text: `💖 Ton chéri, le meilleur du monde, va te préparer l'activité suivante : ${activity.label}.\n📅 Que tu as réservée le ${prettyDate} à ${prettyTime}.\n${activityMsg ? '📝 Message complémentaire : ' + activityMsg + '\n' : ''}📆 Ajouter au calendrier Apple : ${activityCalendarLinks ? activityCalendarLinks.httpsUrl : ''}\n🔁 Lien alternatif Apple (webcal) : ${activityCalendarLinks ? activityCalendarLinks.webcalUrl : ''}\n✨ J'espère qu'il t'offrira une très belle expérience et un moment précieux ensemble !`,
+              html: `<div style="font-family: Arial, sans-serif; line-height: 1.6; color: #222;"><p>💖 Ton chéri, <strong>le meilleur du monde</strong>, va te préparer l'activité suivante : <strong>${activity.label}</strong>.</p><p>📅 Que tu as réservée le <strong>${prettyDate}</strong> à <strong>${prettyTime}</strong>.</p>${activityMsg ? `<p>📝 <strong>Message complémentaire :</strong> ${activityMsg.replace(/\n/g, '<br/>')}</p>` : ''}${activityCalendarLinks ? `<p><a href="${activityCalendarLinks.httpsUrl}">Ajouter au calendrier Apple</a> | <a href="${activityCalendarLinks.webcalUrl}">Lien alternatif (webcal)</a></p>` : ''}<p>✨ J'espère qu'il t'offrira une très belle expérience et un moment précieux ensemble.</p></div>`,
             },
             calendarUrl: activityCalendarLinks ? activityCalendarLinks.httpsUrl : '',
             calendarEvent: {
