@@ -371,23 +371,8 @@ function buildCalendarIcsLink(calendarEvent) {
     .replace(/=+$/g, '');
   const httpsUrl = `https://demande-production.up.railway.app/calendar.ics?event=${payload}`;
 
-  const start = new Date(calendarEvent.startIso);
-  const end = new Date(calendarEvent.endIso || new Date(start.getTime() + 60 * 60 * 1000).toISOString());
-  const toGoogleDate = (d) => {
-    const pad = (n) => String(n).padStart(2, '0');
-    return `${d.getUTCFullYear()}${pad(d.getUTCMonth() + 1)}${pad(d.getUTCDate())}T${pad(d.getUTCHours())}${pad(d.getUTCMinutes())}${pad(d.getUTCSeconds())}Z`;
-  };
-  const googleParams = new URLSearchParams({
-    action: 'TEMPLATE',
-    text: calendarEvent.title || 'Reservation',
-    dates: `${toGoogleDate(start)}/${toGoogleDate(end)}`,
-    details: calendarEvent.description || '',
-    location: calendarEvent.location || '',
-  });
-
   return {
     httpsUrl,
-    googleUrl: `https://calendar.google.com/calendar/render?${googleParams.toString()}`,
     webcalUrl: httpsUrl.replace(/^https:/, 'webcal:'),
   };
 }
