@@ -38,6 +38,41 @@ function normalizeSmtpPass(pass) {
   return pass.replace(/\s/g, '');
 }
 
+function stripDiacritics(value) {
+  return String(value || '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '');
+}
+
+function sanitizeMailbox(rawEmail) {
+  const cleaned = String(rawEmail || '').trim().toLowerCase().replace(/\s+/g, '');
+  const at = cleaned.lastIndexOf('@');
+  if (at <= 0 || at === cleaned.length - 1) return '';
+
+  const domain = cleaned.slice(at + 1);
+  let local = cleaned.slice(0, at);
+  local = stripDiacritics(local).replace(/[^a-z0-9.!#$%&'*+/=?^_`{|}~-]/g, '');
+  if (!local || !domain) return '';
+  return `${local}@${domain}`;
+}
+
+function sanitizeFromHeader(fromValue) {
+  const fallback = 'Reservation <onboarding@resend.dev>';
+  const raw = String(fromValue || '').trim();
+  if (!raw) return fallback;
+
+  const angleMatch = raw.match(/^(.*)<([^<>]+)>$/);
+  if (!angleMatch) {
+    const mailbox = sanitizeMailbox(raw);
+    return mailbox || fallback;
+  }
+
+  const displayName = angleMatch[1].trim().replace(/^"|"$/g, '') || 'Reservation';
+  const mailbox = sanitizeMailbox(angleMatch[2]);
+  if (!mailbox) return fallback;
+  return `${displayName} <${mailbox}>`;
+}
+
 function withTimeout(promise, ms, label) {
   return Promise.race([
     promise,
@@ -253,10 +288,11 @@ app.post('/send-email', async (req, res) => {
   const smtpUser = process.env.SMTP_USER;
   const smtpPass = normalizeSmtpPass(process.env.SMTP_PASS);
   const smtpFrom = process.env.SMTP_FROM || smtpUser;
-  const resendFrom = process.env.RESEND_FROM || smtpFrom || 'Réservation <onboarding@resend.dev>';
+  const resendFromRaw = process.env.RESEND_FROM || smtpFrom || 'Reservation <onboarding@resend.dev>';
+  const resendFrom = sanitizeFromHeader(resendFromRaw);
   const defaultRecipient = process.env.DEFAULT_TO_EMAIL || process.env.MAIL_TO || smtpUser || smtpFrom;
   const defaultSecondaryRecipient = process.env.SECONDARY_TO_EMAIL || '';
-  const to = req.body.to || defaultRecipient;
+  const to = sanitizeMailbox(req.body.to || defaultRecipient);
 
   if (!to) {
     return res.status(400).json({ error: 'No recipient configured. Set DEFAULT_TO_EMAIL in Railway.' });
@@ -303,10 +339,14 @@ app.post('/send-email', async (req, res) => {
       });
     };
 
-    const secondaryToRaw = (secondaryEmail && secondaryEmail.to) || defaultSecondaryRecipient;
-    const secondaryTo = typeof secondaryToRaw === 'string' ? secondaryToRaw.trim() : '';
+    const secondaryToInput = (secondaryEmail && secondaryEmail.to) || defaultSecondaryRecipient;
+    const secondaryTo = sanitizeMailbox(secondaryToInput);
     let secondaryInfo = null;
     let secondaryError = '';
+
+    if (secondaryToInput && !secondaryTo) {
+      secondaryError = 'Secondary recipient email is invalid';
+    }
 
     const primaryPromise = withTimeout(
       sendWithConfiguredProvider({
@@ -385,6 +425,8 @@ app.post('/send-email', async (req, res) => {
       primary: primaryInfo,
       secondary: secondaryInfo,
       secondaryError,
+      fromUsed: resendFrom,
+      secondaryToUsed: secondaryTo || '',
     });
   } catch (err) {
     console.error('Email error:', err);
