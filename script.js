@@ -541,17 +541,18 @@ function showProposeActivityForm() {
     const proposalStart = val ? new Date(val) : null;
     const proposalEnd = proposalStart ? new Date(proposalStart.getTime() + 60 * 60 * 1000) : null;
     const emailSubject = `💡 Proposition d'activité : ${title || 'Nouvelle proposition'}`;
-    const emailText = `💡 Proposition:\n${title ? title + '\n' : ''}${details ? details + '\n' : ''}${val ? 'Proposée pour : ' + pretty + '\n' : ''}`;
+    const proposalBaseText = `💡 Proposition:\n${title ? title + '\n' : ''}${details ? details + '\n' : ''}${val ? 'Proposée pour : ' + pretty + '\n' : ''}`;
     const proposalCalendarLinks = proposalStart
       ? buildCalendarIcsLink({
           title: title || 'Proposition d\'activite',
           startIso: proposalStart.toISOString(),
           endIso: proposalEnd.toISOString(),
-          description: details || emailText,
+          description: details || proposalBaseText,
           location: '',
           url: location.href,
         })
       : null;
+    const emailText = `${proposalBaseText}${proposalCalendarLinks ? 'Ajouter au calendrier : ' + proposalCalendarLinks.webcalUrl + '\nOuvrir le fichier calendrier : ' + proposalCalendarLinks.httpsUrl + '\n' : ''}`;
     const emailHtml = `
       <div style="font-family: Arial, sans-serif; color: #4a2d3f; line-height: 1.6;">
         <p>💡 <strong>Nouvelle proposition d'activité</strong></p>
@@ -709,15 +710,16 @@ function showActivityConfirm(activity) {
       const prettyTime = chosen.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
       const activityMsg = (document.getElementById('activityMessage').value || '').trim();
       const emailSubject = `💖 Nouvelle activité réservée : ${activity.label}`;
-      const emailText = `💕 Ta Baby's a choisi l'activité suivante : ${activity.label}.\n📅 Elle a été réservée pour le ${pretty}.\n${activityMsg ? '📝 Message : ' + activityMsg + '\n' : ''}✨ J'espère que tu vas lui offrir une très belle expérience et un moment précieux ensemble !`;
+      const activityBaseText = `💕 Ta Baby's a choisi l'activité suivante : ${activity.label}.\n📅 Elle a été réservée pour le ${pretty}.\n${activityMsg ? '📝 Message : ' + activityMsg + '\n' : ''}`;
       const activityCalendarLinks = buildCalendarIcsLink({
         title: `${activity.label} avec Baby's`,
         startIso: chosen.toISOString(),
         endIso: chosenEnd.toISOString(),
-        description: activityMsg || emailText,
+        description: activityMsg || activityBaseText,
         location: '',
         url: location.href,
       });
+      const emailText = `${activityBaseText}${activityCalendarLinks ? '📆 Ajouter au calendrier : ' + activityCalendarLinks.webcalUrl + '\n📎 Ouvrir le fichier calendrier : ' + activityCalendarLinks.httpsUrl + '\n' : ''}✨ J'espère que tu vas lui offrir une très belle expérience et un moment précieux ensemble !`;
       const emailHtml = `
         <div style="font-family: Arial, sans-serif; color: #4a2d3f; line-height: 1.6;">
           <p>💖 <strong>Ta Baby's a choisi</strong> l'activité suivante : <strong>${activity.label}</strong>.</p>
