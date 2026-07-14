@@ -740,10 +740,10 @@ function showActivityConfirm(activity) {
             html: emailHtml,
             secondaryEmail: {
               to: 'juniordemai976@gmail.com',
-              includeCalendar: false,
+              includeCalendar: true,
               subject: `💖 Activité réservée : ${activity.label}`,
-              text: `💖 Ton chéri, le meilleur du monde, va te préparer l'activité suivante : ${activity.label}.\n📅 Que tu as réservée le ${prettyDate} à ${prettyTime}.\n✨ J'espère qu'il t'offrira une très belle expérience et un moment précieux ensemble.`,
-              html: `<div style="font-family: Arial, sans-serif; line-height: 1.6; color: #222;"><p>💖 Ton chéri, <strong>le meilleur du monde</strong>, va te préparer l'activité suivante : <strong>${activity.label}</strong>.</p><p>📅 Que tu as réservée le <strong>${prettyDate}</strong> à <strong>${prettyTime}</strong>.</p><p>✨ J'espère qu'il t'offrira une très belle expérience et un moment précieux ensemble.</p></div>`,
+              text: `💖 Ton chéri, le meilleur du monde, va te préparer l'activité suivante : ${activity.label}.\n📅 Que tu as réservée le ${prettyDate} à ${prettyTime}.\n📆 Ajouter au calendrier: ${activityCalendarLinks ? activityCalendarLinks.webcalUrl : ''}\n📎 Ouvrir le fichier calendrier: ${activityCalendarLinks ? activityCalendarLinks.httpsUrl : ''}\n✨ J'espère qu'il t'offrira une très belle expérience et un moment précieux ensemble !`,
+              html: `<div style="font-family: Arial, sans-serif; line-height: 1.6; color: #222;"><p>💖 Ton chéri, <strong>le meilleur du monde</strong>, va te préparer l'activité suivante : <strong>${activity.label}</strong>.</p><p>📅 Que tu as réservée le <strong>${prettyDate}</strong> à <strong>${prettyTime}</strong>.</p>${activityCalendarLinks ? `<p><a href="${activityCalendarLinks.webcalUrl}">Ajouter au calendrier</a> | <a href="${activityCalendarLinks.httpsUrl}">Ouvrir le fichier calendrier</a></p>` : ''}<p>✨ J'espère qu'il t'offrira une très belle expérience et un moment précieux ensemble.</p></div>`,
             },
             calendarUrl: activityCalendarLinks ? activityCalendarLinks.httpsUrl : '',
             calendarEvent: {
